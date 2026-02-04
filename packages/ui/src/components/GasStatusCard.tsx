@@ -2,11 +2,14 @@ import { AlertTriangle, Clock, Shield, Loader2, Check, XCircle, WifiOff, ArrowRi
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { WalletState, SponsorshipState } from "@/types/demo";
+import { SponsorshipState } from "@/types/demo";
+import { Wallet } from "@/types/wallet";
 import { MOCK_DATA } from "@/types/demo";
+import { WalletStatus } from "@/types/wallet";
+import { formatBalance } from "@/lib/balance";
 
 interface GasStatusCardProps {
-  wallet: WalletState;
+  wallet: Wallet;
   sponsorship: SponsorshipState;
   onRequestSponsorship: () => void;
   onViewPolicy: () => void;
@@ -26,8 +29,8 @@ export function GasStatusCard({
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const isConnected = wallet.status === "connected";
-  const isWrongNetwork = wallet.status === "wrong-network";
+  const isConnected = wallet.status === WalletStatus.CONNECTED;
+  const isWrongNetwork = wallet.status === WalletStatus.WRONG_NETWORK;
 
   if (!isConnected && !isWrongNetwork) {
     return (
@@ -79,14 +82,14 @@ export function GasStatusCard({
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Your balance:</span>
             <span className="font-mono">
-              {(wallet.balanceSats / 100000000).toFixed(8)} BTC
-              <span className="text-muted-foreground ml-1">({wallet.balanceSats} sats)</span>
+              {formatBalance(wallet.balance)} BTC
+              <span className="text-muted-foreground ml-1">({wallet.balance} sats)</span>
             </span>
           </div>
         </div>
 
         {/* Zero Balance Warning */}
-        {wallet.balanceSats === 0 && (
+        {Number(wallet.balance) === 0 && (
           <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 flex items-start gap-2">
             <AlertTriangle className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">
