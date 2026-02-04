@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Plus, RefreshCw, Wallet, Loader2, Check, X, AlertTriangle } from 'lucide-react';
+import { Plus, RefreshCw, Loader2, Check, X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CounterState, WalletState, SponsorshipState, TransactionState } from '@/types/demo';
+import { CounterState, SponsorshipState, TransactionState } from '@/types/demo';
 import { MOCK_DATA } from '@/types/demo';
 import { toast } from 'sonner';
+import { ConnectWalletButton } from './connect-wallet-button';
+import { Wallet } from '@/types/wallet';
 
 interface CounterCardProps {
   counter: CounterState;
-  wallet: WalletState;
+  wallet: Wallet;
   sponsorship: SponsorshipState;
   transaction: TransactionState;
-  onConnect: () => void;
   onIncrement: () => void;
   onRefresh: () => void;
 }
@@ -21,7 +22,6 @@ export function CounterCard({
   wallet,
   sponsorship,
   transaction,
-  onConnect,
   onIncrement,
   onRefresh,
 }: CounterCardProps) {
@@ -200,23 +200,7 @@ export function CounterCard({
         {/* Action Buttons */}
         <div className="flex gap-3">
           {!isConnected ? (
-            <Button
-              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={onConnect}
-              disabled={wallet.status === 'connecting'}
-            >
-              {wallet.status === 'connecting' ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <Wallet className="h-4 w-4 mr-2" />
-                  Connect Wallet
-                </>
-              )}
-            </Button>
+            <ConnectWalletButton />
           ) : (
             <>
               <Button

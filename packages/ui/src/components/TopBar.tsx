@@ -6,11 +6,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { WalletState } from '@/types/demo';
+import { Wallet, WalletStatus } from '@/types/wallet';
 import { MOCK_DATA } from '@/types/demo';
 
 interface TopBarProps {
-  wallet: WalletState;
+  wallet: Wallet;
   onHelpClick: () => void;
   onDisconnect: () => void;
 }
@@ -58,14 +58,14 @@ export function TopBar({ wallet, onHelpClick, onDisconnect }: TopBarProps) {
             </div>
           )}
 
-          {wallet.status === 'connecting' && (
+          {wallet.status === WalletStatus.CONNECTING && (
             <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-1.5">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
               <span className="text-sm text-muted-foreground">Connecting...</span>
             </div>
           )}
 
-          {wallet.status === 'wrong-network' && wallet.address && (
+          {wallet.status === WalletStatus.WRONG_NETWORK && wallet.address && (
             <div className="flex items-center gap-2 bg-destructive/10 rounded-lg px-3 py-1.5 border border-destructive/30">
               <div className="w-2 h-2 rounded-full bg-destructive" />
               <span className="font-mono text-sm text-destructive">

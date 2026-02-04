@@ -9,26 +9,43 @@ import { HelpModal } from '@/components/HelpModal';
 import { DemoControls } from '@/components/DemoControls';
 import { useDemoState } from '@/hooks/useDemoState';
 import { toast } from 'sonner';
+import { useDisconnect, useSwitchChain } from 'wagmi';
+import { useWallet } from '@/hooks/use-wallet';
+import { ChainId } from '@/types/chain';
 
 const Index = () => {
   const { state, actions } = useDemoState();
   const [showPolicy, setShowPolicy] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const { disconnect } = useDisconnect();
+  const { switchChain } = useSwitchChain();
+  const wallet = useWallet();
 
   const handleSwitchNetwork = () => {
-    toast.info('Network switch requested', {
-      description: 'In a real app, this would trigger a wallet network switch.',
-    });
-    // Simulate switching to correct network
-    actions.forceWalletStatus('connected');
+    switchChain(
+      { chainId: ChainId.ALPEN_TESTNET },
+      {
+        onSuccess: () => {
+          toast.success('Network switched successfully', {
+            description: 'You are now connected to Alpen Testnet.',
+          });
+        },
+        onError: (error) => {
+          toast.error('Failed to switch network', {
+            description: error.message || 'Please switch the network manually in your wallet.',
+          });
+        },
+      }
+    );
   };
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <TopBar
-        wallet={state.wallet}
+        wallet={wallet}
         onHelpClick={() => setShowHelp(true)}
-        onDisconnect={actions.disconnectWallet}
+        onDisconnect={disconnect}
       />
 
       <main className="flex-1 container mx-auto px-4 py-6">
@@ -37,16 +54,15 @@ const Index = () => {
           <div className="space-y-6">
             <CounterCard
               counter={state.counter}
-              wallet={state.wallet}
+              wallet={wallet}
               sponsorship={state.sponsorship}
               transaction={state.transaction}
-              onConnect={actions.connectWallet}
               onIncrement={actions.incrementCounter}
               onRefresh={actions.refreshCounter}
             />
 
             <GasStatusCard
-              wallet={state.wallet}
+              wallet={wallet}
               sponsorship={state.sponsorship}
               onRequestSponsorship={actions.checkSponsorship}
               onViewPolicy={() => setShowPolicy(true)}

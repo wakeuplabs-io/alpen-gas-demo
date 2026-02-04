@@ -9,7 +9,7 @@ This project follows specific architecture patterns and conventions. Please read
 
 ## Key Principles
 
-- Follow the architecture rules defined in `ARCHITECTURE_RULES.md`
+- Follow the architecture rules defined in `docs/ARCHITECTURE_RULES.md`
 - Backend: Route Handlers → Services → External APIs
 - Frontend: Components → Hooks → API Client → Backend
 - Keep code simple and self-readable
