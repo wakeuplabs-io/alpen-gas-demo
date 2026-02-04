@@ -1,4 +1,23 @@
-# React Monorepo Template
+# BTC-Gas EVM Counter Demo
+
+> Production-ready application demonstrating gas sponsorship on an EVM blockchain where the native gas token is BTC.
+
+## 📚 Documentation
+
+This project includes comprehensive documentation for development:
+
+- **`docs/HANDOVER.md`** - Complete project overview, architecture, requirements, and implementation guide
+- **`docs/ARCHITECTURE_RULES.md`** - Detailed architecture patterns, coding standards, and examples
+- **`docs/CURSOR_SETUP.md`** - Guide for using documentation with Cursor AI
+- **`.cursorrules`** - Cursor AI configuration that references the documentation
+
+### For Cursor AI
+
+Cursor will automatically use the documentation files when they are:
+- Located in `docs/` folder (✅ `docs/HANDOVER.md`, `docs/ARCHITECTURE_RULES.md`)
+- Referenced in `.cursorrules` (✅ already configured)
+
+You can also reference these files manually in Cursor by using `@docs/HANDOVER.md` or `@docs/ARCHITECTURE_RULES.md` in your prompts.
 
 ## Node and NPM version
 

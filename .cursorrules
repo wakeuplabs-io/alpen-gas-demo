@@ -1,0 +1,29 @@
+# Cursor Rules for BTC-Gas EVM Counter Demo
+
+This project follows specific architecture patterns and conventions. Please read the following documentation files before making changes:
+
+## Documentation Files
+
+1. **docs/HANDOVER.md** - Complete project overview, requirements, and implementation guide
+2. **docs/ARCHITECTURE_RULES.md** - Detailed architecture patterns, coding standards, and examples
+
+## Key Principles
+
+- Follow the architecture rules defined in `ARCHITECTURE_RULES.md`
+- Backend: Route Handlers → Services → External APIs
+- Frontend: Components → Hooks → API Client → Backend
+- Keep code simple and self-readable
+- Use JSDoc for backend methods only when it adds value beyond the method name
+
+## Project Structure
+
+- `packages/ui/` - Frontend React application
+- `packages/api/` - Backend Hono API
+- All documentation in `docs/`: `docs/HANDOVER.md` and `docs/ARCHITECTURE_RULES.md`
+
+## When Making Changes
+
+1. Check `docs/ARCHITECTURE_RULES.md` for patterns and examples
+2. Follow the separation of concerns (handlers → services, components → hooks)
+3. Maintain type safety with TypeScript interfaces
+4. Keep error handling consistent with documented patterns
