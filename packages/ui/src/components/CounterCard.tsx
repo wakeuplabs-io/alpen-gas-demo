@@ -13,6 +13,7 @@ interface CounterCardProps {
   wallet: Wallet;
   sponsorship: SponsorshipState;
   transaction: TransactionState;
+  isIncrementing: boolean;
   onIncrement: () => void;
   onRefresh: () => void;
 }
@@ -23,6 +24,7 @@ export function CounterCard({
   sponsorship,
   transaction,
   onIncrement,
+  isIncrementing,
   onRefresh,
 }: CounterCardProps) {
   const [isAnimating, setIsAnimating] = useState(false);
@@ -48,10 +50,11 @@ export function CounterCard({
   };
 
   const isConnected = wallet.status === 'connected';
-  const canIncrement = 
+  /*const canIncrement = 
     isConnected && 
     sponsorship.status === 'eligible' && 
-    transaction.status === 'idle';
+    transaction.status === 'idle';*/
+  const canIncrement = isConnected;
 
   const getIncrementButtonContent = () => {
     if (transaction.status === 'preparing') {
@@ -212,9 +215,16 @@ export function CounterCard({
                     : 'bg-primary hover:bg-primary/90'
                 } text-primary-foreground`}
                 onClick={onIncrement}
-                disabled={!canIncrement}
+                disabled={!canIncrement || isIncrementing}
               >
-                {getIncrementButtonContent()}
+                {isIncrementing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Incrementing...
+                  </>
+                ) : (
+                  getIncrementButtonContent()
+                )}
               </Button>
               <Button
                 variant="outline"

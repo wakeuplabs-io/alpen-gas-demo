@@ -7,7 +7,6 @@ import { Providers } from "./providers";
 import Index from "./pages/Index";
 import WalletDemo from "./pages/WalletDemo";
 import NotFound from "./pages/NotFound";
-import '@rainbow-me/rainbowkit/styles.css';
 
 const App = () => (
   <Providers>

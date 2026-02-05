@@ -1,18 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider } from 'wagmi';
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { PrivyProvider } from '@privy-io/react-auth';
 import { ReactNode } from 'react';
-import { config } from './config/wagmi';
-
-const projectId = import.meta.env.VITE_PUBLIC_WALLETCONNECT_PROJECT_ID || '';
-
-if (!projectId) {
-  console.warn('VITE_PUBLIC_WALLETCONNECT_PROJECT_ID is not set');
-}
-
-
-
-const queryClient = new QueryClient();
+import { CHAIN } from './lib/network';
+import { env } from './config/env';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -20,12 +9,22 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
-          {children}
-        </RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <PrivyProvider
+      appId={env.privyAppId || ''}
+      clientId={env.privyClientId || ''}
+      config={{
+        // Automatically create embedded wallet for all users
+        embeddedWallets: {
+          ethereum: {
+            createOnLogin: 'all-users',
+          },
+        },
+        // Configure Alpen Testnet
+        supportedChains: [CHAIN],
+        defaultChain: { ...CHAIN },
+      }}
+    >
+      {children}
+    </PrivyProvider>
   );
 }
