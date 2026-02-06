@@ -14,11 +14,14 @@ const EnvSchema = z.object({
   PORT: z.coerce.number().default(9999),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).optional(),
   CORS_ORIGINS: z.string().default("http://localhost:3000"),
+  RPC_URL: z.string(),
+  SPONSOR_PRIVATE_KEY: z.string(),
+  BATCH_CALL_AND_SPONSOR_ADDRESS: z.string(),
 });
 
-export type env = z.infer<typeof EnvSchema>;
+export type EnvType = z.infer<typeof EnvSchema>;
 
-const { data: env, error } = EnvSchema.safeParse(process.env);
+const { data: envConfig, error } = EnvSchema.safeParse(process.env);
 
 if (error) {
   console.error("❌ Invalid env:");
@@ -26,4 +29,17 @@ if (error) {
   process.exit(1);
 }
 
-export default env!;
+if (!envConfig) {
+  console.error("❌ No env config found");
+  process.exit(1);
+}
+
+export const env = {
+  nodeEnv: envConfig?.NODE_ENV,
+  port: envConfig?.PORT,
+  logLevel: envConfig?.LOG_LEVEL,
+  corsOrigins: envConfig?.CORS_ORIGINS,
+  rpcUrl: envConfig?.RPC_URL,
+  sponsorPrivateKey: envConfig?.SPONSOR_PRIVATE_KEY,
+  batchCallAndSponsorAddress: envConfig?.BATCH_CALL_AND_SPONSOR_ADDRESS,
+};

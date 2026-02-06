@@ -1,17 +1,17 @@
 /**
  * @fileoverview Main configuration for the Hono API application
  * This file configures and exports the main Hono application instance,
- * including CORS middleware, OpenAPI documentation, and routing.
+ * including CORS middleware and routing.
  *
  * @module app
  */
 
 import createApp from "./lib/create-app";
-import env from "./env";
+import env from "./config/env";
 import { cors } from "hono/cors";
-import configureOpenAPI from "./lib/configure-open-api";
 import index from "./routes/index.route";
 import example from "./routes/example/example.index";
+import delegate from "./routes/delegate/delegate.index";
 
 /**
  * Main Hono application instance
@@ -33,6 +33,8 @@ app.use(
   cors({
     origin: env.CORS_ORIGINS.split(",").map((origin) => origin.trim()),
     credentials: true,
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
@@ -41,13 +43,7 @@ app.use(
  * Each route is an OpenAPIHono instance with its own definitions
  * @type {Array<import('./lib/types').AppOpenAPI>}
  */
-const routes = [index, example];
-
-/**
- * Configures OpenAPI/Swagger documentation for the API
- * This enables the /doc and /reference endpoints for documentation
- */
-configureOpenAPI(app);
+const routes = [index, example, delegate];
 
 /**
  * Registers all routes under the '/api' prefix
@@ -63,7 +59,11 @@ routes.forEach((route) => {
  * - /example : Example route that demonstrates basic endpoint structure
  * @type {import('./lib/types').AppOpenAPI}
  */
-const apiRoutes = app.basePath("/api").route("/", index).route("/example", example);
+const apiRoutes = app
+  .basePath("/api")
+  .route("/", index)
+  .route("/example", example)
+  .route("/delegate", delegate);
 
 /**
  * Exported type that represents the API route structure
