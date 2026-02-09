@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const RequestSponsorshipRequestSchema = z.object({
   address: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address format"),
+  operationalAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address format"),
 });
 
 export type RequestSponsorshipRequest = z.infer<typeof RequestSponsorshipRequestSchema>;

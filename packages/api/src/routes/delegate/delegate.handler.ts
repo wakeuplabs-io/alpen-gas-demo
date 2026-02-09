@@ -131,11 +131,10 @@ export const transactHandler: AppRouteHandler<TransactRoute> = async (c) => {
     }
 
     const executeTx = await delegatedContract[
-      "execute((address,uint256,bytes)[],bytes,address)"
+      "execute((address,uint256,bytes)[],bytes)"
     ](
       callTuples,
       signature,
-      sponsorWhitelistAddress,
       { gasLimit: 5000000 }
     );
 

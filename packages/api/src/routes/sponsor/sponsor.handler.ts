@@ -30,7 +30,7 @@ export const requestSponsorshipHandler: AppRouteHandler<RequestSponsorshipRoute>
     }
 
     const sponsorWhitelistService = new SponsorWhitelistService(sponsorWhitelistAddress);
-    const result = await sponsorWhitelistService.checkEligibility(validatedData.address);
+    const result = await sponsorWhitelistService.checkEligibility(validatedData.address, validatedData.operationalAddress);
 
     return c.json(result, HttpStatusCodes.OK);
   } catch (error) {

@@ -10,7 +10,7 @@ contract BatchCallAndSponsor {
     using ECDSA for bytes32;
 
     // TODO: make it immutable
-    SponsorWhitelist public sponsorWhitelist;
+    address public immutable SPONSOR_WHITELIST_ADDRESS;
 
     /// @notice A nonce used for replay protection.
     uint256 public nonce;
@@ -34,8 +34,8 @@ contract BatchCallAndSponsor {
 
     error SponsorWhitelistNotSet();
 
-    constructor(address _sponsorWhitelist) {
-        sponsorWhitelist = SponsorWhitelist(_sponsorWhitelist);
+    constructor(address _sponsorWhitelistAddress) {
+        SPONSOR_WHITELIST_ADDRESS = _sponsorWhitelistAddress;
     }
 
     /**
@@ -48,14 +48,11 @@ contract BatchCallAndSponsor {
      */
     function execute(
         Call[] calldata calls,
-        bytes calldata signature,
-        address sponsorWhitelistAddress
+        bytes calldata signature
     ) external payable {
-        if (sponsorWhitelistAddress == address(0)) {
+        if (SPONSOR_WHITELIST_ADDRESS == address(0)) {
             revert SponsorWhitelistNotSet();
         }
-
-        sponsorWhitelist = SponsorWhitelist(sponsorWhitelistAddress);
 
         address wallet = address(this);
 
@@ -64,7 +61,7 @@ contract BatchCallAndSponsor {
             targetContracts[i] = calls[i].to;
         }
 
-        SponsorWhitelist(sponsorWhitelistAddress).validateSponsorship(wallet, targetContracts);
+        SponsorWhitelist(SPONSOR_WHITELIST_ADDRESS).validateSponsorship(wallet, targetContracts);
 
         bytes memory encodedCalls;
         for (uint256 i = 0; i < calls.length; i++) {
@@ -96,14 +93,14 @@ contract BatchCallAndSponsor {
     function execute(Call[] calldata calls) external payable {
         require(msg.sender == address(this), "Invalid authority");
 
-        if (address(sponsorWhitelist) != address(0)) {
+        if (SPONSOR_WHITELIST_ADDRESS != address(0)) {
             address wallet = address(this);
             address[] memory targetContracts = new address[](calls.length);
             for (uint256 i = 0; i < calls.length; i++) {
                 targetContracts[i] = calls[i].to;
             }
 
-            sponsorWhitelist.validateSponsorship(wallet, targetContracts);
+            SponsorWhitelist(SPONSOR_WHITELIST_ADDRESS).validateSponsorship(wallet, targetContracts);
         }
 
         _executeBatch(calls);

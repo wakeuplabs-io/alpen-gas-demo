@@ -8,7 +8,7 @@ const wallet = env.sponsorPrivateKey
 
 // BatchCallAndSponsor ABI - matches the contract interface
 export const abi = [
-  "function execute((address,uint256,bytes)[],bytes,address) external payable",
+  "function execute((address,uint256,bytes)[],bytes) external payable",
   "function execute((address,uint256,bytes)[]) external payable",
   "function nonce() view returns (uint256)",
 ] as const;

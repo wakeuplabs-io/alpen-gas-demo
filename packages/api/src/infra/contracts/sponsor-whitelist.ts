@@ -29,7 +29,7 @@ export class SponsorWhitelistService {
    * Checks if a wallet is eligible for sponsorship by querying the SponsorWhitelist contract
    * Returns eligibility status, reason if not eligible, and daily usage information
    */
-  public async checkEligibility(walletAddress: string): Promise<CheckEligibilityResult> {
+  public async checkEligibility(walletAddress: string, operationalAddress: string): Promise<CheckEligibilityResult> {
     try {
       const contract = new ethers.Contract(
         this.contractAddress,
@@ -39,7 +39,7 @@ export class SponsorWhitelistService {
 
       const [eligible, reason] = await contract.checkEligibility(walletAddress);
       const dailyLimit = await contract.dailyLimit();
-      const dailyUsage = await contract.dailyUsage(walletAddress);
+      const dailyUsage = await contract.dailyUsage(operationalAddress);
 
       return {
         eligible: Boolean(eligible),
