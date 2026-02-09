@@ -22,5 +22,6 @@ export const CHAIN = {
 } as const;
 
 export const RPC_URL = "https://rpc.testnet.alpenlabs.io";
+export const EXPLORER_URL = "https://explorer.testnet.alpenlabs.io";
 export const CHAIN_ID = 8150;
 export const PROVIDER = new JsonRpcProvider(RPC_URL);
