@@ -7,11 +7,11 @@
  */
 
 import createApp from "./lib/create-app";
-import env from "./config/env";
+import { env } from "./config/env";
 import { cors } from "hono/cors";
 import index from "./routes/index.route";
-import example from "./routes/example/example.index";
 import delegate from "./routes/delegate/delegate.index";
+import sponsor from "./routes/sponsor/sponsor.index";
 
 /**
  * Main Hono application instance
@@ -31,7 +31,7 @@ const app = createApp();
 app.use(
   "/*",
   cors({
-    origin: env.CORS_ORIGINS.split(",").map((origin) => origin.trim()),
+    origin: env.corsOrigins.split(",").map((origin) => origin.trim()),
     credentials: true,
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowHeaders: ["Content-Type", "Authorization"],
@@ -43,7 +43,7 @@ app.use(
  * Each route is an OpenAPIHono instance with its own definitions
  * @type {Array<import('./lib/types').AppOpenAPI>}
  */
-const routes = [index, example, delegate];
+const routes = [index, delegate, sponsor];
 
 /**
  * Registers all routes under the '/api' prefix
@@ -62,8 +62,8 @@ routes.forEach((route) => {
 const apiRoutes = app
   .basePath("/api")
   .route("/", index)
-  .route("/example", example)
-  .route("/delegate", delegate);
+  .route("/delegate", delegate)
+  .route("/sponsor", sponsor);
 
 /**
  * Exported type that represents the API route structure

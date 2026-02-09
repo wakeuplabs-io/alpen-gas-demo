@@ -11,6 +11,8 @@ import { SetupRoute, TransactRoute } from "./delegate.routes";
 import { ethers } from "ethers";
 import { batchCallAndSponsor } from "../../infra/contracts/sponsor";
 import { z } from "zod";
+import { SetupRequest, TransactRequest } from "./delegate.types";
+import { env } from "../../config/env";
 
 
 /**
@@ -26,7 +28,7 @@ export const setupHandler: AppRouteHandler<SetupRoute> = async (c) => {
       );
     }
 
-    const { user, authorization } = c.req.valid("json");
+    const { user, authorization } = await c.req.json() as SetupRequest;
 
     // Validate authorization matches expected implementation
     if (batchCallAndSponsor.address && authorization.address.toLowerCase() !== batchCallAndSponsor.address.toLowerCase()) {
@@ -85,7 +87,7 @@ export const setupHandler: AppRouteHandler<SetupRoute> = async (c) => {
  */
 export const transactHandler: AppRouteHandler<TransactRoute> = async (c) => {
   try {
-    const { user, calls, signature } = c.req.valid("json");
+    const { user, calls, signature } = await c.req.json() as TransactRequest;
 
     const accountCode = await batchCallAndSponsor.provider.getCode(user);
     
@@ -119,12 +121,21 @@ export const transactHandler: AppRouteHandler<TransactRoute> = async (c) => {
       BigInt(call.value || "0"),
       call.data,
     ]);
+  
+    const sponsorWhitelistAddress = env.sponsorWhitelistAddress;
+    if (!sponsorWhitelistAddress) {
+      return c.json(
+        { error: "SponsorWhitelist not configured", details: "SPONSOR_WHITELIST_ADDRESS is not set" },
+        HttpStatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
 
     const executeTx = await delegatedContract[
-      "execute((address,uint256,bytes)[],bytes)"
+      "execute((address,uint256,bytes)[],bytes,address)"
     ](
       callTuples,
       signature,
+      sponsorWhitelistAddress,
       { gasLimit: 5000000 }
     );
 

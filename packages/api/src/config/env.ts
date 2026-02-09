@@ -17,6 +17,7 @@ const EnvSchema = z.object({
   RPC_URL: z.string(),
   SPONSOR_PRIVATE_KEY: z.string(),
   BATCH_CALL_AND_SPONSOR_ADDRESS: z.string(),
+  SPONSOR_WHITELIST_ADDRESS: z.string().optional(),
 });
 
 export type EnvType = z.infer<typeof EnvSchema>;
@@ -42,4 +43,5 @@ export const env = {
   rpcUrl: envConfig?.RPC_URL,
   sponsorPrivateKey: envConfig?.SPONSOR_PRIVATE_KEY,
   batchCallAndSponsorAddress: envConfig?.BATCH_CALL_AND_SPONSOR_ADDRESS,
+  sponsorWhitelistAddress: envConfig?.SPONSOR_WHITELIST_ADDRESS,
 };

@@ -4,9 +4,13 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./SponsorWhitelist.sol";
 
 contract BatchCallAndSponsor {
     using ECDSA for bytes32;
+
+    // TODO: make it immutable
+    SponsorWhitelist public sponsorWhitelist;
 
     /// @notice A nonce used for replay protection.
     uint256 public nonce;
@@ -28,19 +32,40 @@ contract BatchCallAndSponsor {
     /// @notice Emitted when a full batch is executed.
     event BatchExecuted(uint256 indexed nonce, Call[] calls);
 
+    error SponsorWhitelistNotSet();
+
+    constructor(address _sponsorWhitelist) {
+        sponsorWhitelist = SponsorWhitelist(_sponsorWhitelist);
+    }
+
     /**
      * @notice Executes a batch of calls using an off–chain signature.
      * @param calls An array of Call structs containing destination, ETH value, and calldata.
      * @param signature The ECDSA signature over the current nonce and the call data.
      *
      * The signature must be produced off–chain by signing:
-     * The signing key should be the account’s key (which becomes the smart account’s own identity after upgrade).
+     * The signing key should be the account's key (which becomes the smart account's own identity after upgrade).
      */
     function execute(
         Call[] calldata calls,
-        bytes calldata signature
+        bytes calldata signature,
+        address sponsorWhitelistAddress
     ) external payable {
-        // Compute the digest that the account was expected to sign.
+        if (sponsorWhitelistAddress == address(0)) {
+            revert SponsorWhitelistNotSet();
+        }
+
+        sponsorWhitelist = SponsorWhitelist(sponsorWhitelistAddress);
+
+        address wallet = address(this);
+
+        address[] memory targetContracts = new address[](calls.length);
+        for (uint256 i = 0; i < calls.length; i++) {
+            targetContracts[i] = calls[i].to;
+        }
+
+        SponsorWhitelist(sponsorWhitelistAddress).validateSponsorship(wallet, targetContracts);
+
         bytes memory encodedCalls;
         for (uint256 i = 0; i < calls.length; i++) {
             encodedCalls = abi.encodePacked(
@@ -56,7 +81,6 @@ contract BatchCallAndSponsor {
             digest
         );
 
-        // Recover the signer from the provided signature.
         address recovered = ECDSA.recover(ethSignedMessageHash, signature);
         require(recovered == address(this), "Invalid signature");
 
@@ -71,6 +95,17 @@ contract BatchCallAndSponsor {
      */
     function execute(Call[] calldata calls) external payable {
         require(msg.sender == address(this), "Invalid authority");
+
+        if (address(sponsorWhitelist) != address(0)) {
+            address wallet = address(this);
+            address[] memory targetContracts = new address[](calls.length);
+            for (uint256 i = 0; i < calls.length; i++) {
+                targetContracts[i] = calls[i].to;
+            }
+
+            sponsorWhitelist.validateSponsorship(wallet, targetContracts);
+        }
+
         _executeBatch(calls);
     }
 
