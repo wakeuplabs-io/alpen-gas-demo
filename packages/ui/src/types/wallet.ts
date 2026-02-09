@@ -1,5 +1,3 @@
-import { Address } from "viem";
-
 export enum WalletStatus {
   DISCONNECTED = 'disconnected',
   CONNECTING = 'connecting',
@@ -9,6 +7,6 @@ export enum WalletStatus {
 
 export interface Wallet {
   status: WalletStatus;
-  address: Address | null;
+  address: `0x${string}` | null;
   balance: string;
 }

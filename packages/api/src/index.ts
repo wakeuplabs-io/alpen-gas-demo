@@ -1,9 +1,9 @@
 import { handle } from "hono/aws-lambda";
 import { serve } from "@hono/node-server";
-import env from "./env";
+import { env } from "./config/env";
 import app from "./app";
 
-const port = env.PORT;
+const port = env.port;
 
 // For AWS Lambda
 export const handler = handle(app);

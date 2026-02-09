@@ -9,34 +9,36 @@ import { HelpModal } from '@/components/HelpModal';
 import { DemoControls } from '@/components/DemoControls';
 import { useDemoState } from '@/hooks/useDemoState';
 import { toast } from 'sonner';
-import { useDisconnect, useSwitchChain } from 'wagmi';
+import { useLogout, useWallets } from '@privy-io/react-auth';
 import { useWallet } from '@/hooks/use-wallet';
-import { ChainId } from '@/types/chain';
+import { CHAIN_ID } from '@/lib/network';
+import { useCounter } from '@/hooks/use-counter';
 
 const Index = () => {
   const { state, actions } = useDemoState();
   const [showPolicy, setShowPolicy] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const { disconnect } = useDisconnect();
-  const { switchChain } = useSwitchChain();
+  const { logout } = useLogout();
+  const { wallets } = useWallets();
   const wallet = useWallet();
+  const counter = useCounter();
 
-  const handleSwitchNetwork = () => {
-    switchChain(
-      { chainId: ChainId.ALPEN_TESTNET },
-      {
-        onSuccess: () => {
-          toast.success('Network switched successfully', {
-            description: 'You are now connected to Alpen Testnet.',
-          });
-        },
-        onError: (error) => {
-          toast.error('Failed to switch network', {
-            description: error.message || 'Please switch the network manually in your wallet.',
-          });
-        },
+  const handleSwitchNetwork = async () => {
+    try {
+      // Privy handles chain switching automatically for embedded wallets
+      // For external wallets, we can try to switch
+      if (wallets && wallets.length > 0) {
+        // Try to switch chain if supported
+        await wallets[0].switchChain(CHAIN_ID);
+        toast.success('Network switched successfully', {
+          description: 'You are now connected to Alpen Testnet.',
+        });
       }
-    );
+    } catch (error) {
+      toast.error('Failed to switch network', {
+        description: error instanceof Error ? error.message : 'Please switch the network manually in your wallet.',
+      });
+    }
   };
 
 
@@ -45,7 +47,7 @@ const Index = () => {
       <TopBar
         wallet={wallet}
         onHelpClick={() => setShowHelp(true)}
-        onDisconnect={disconnect}
+        onDisconnect={logout}
       />
 
       <main className="flex-1 container mx-auto px-4 py-6">
@@ -53,11 +55,12 @@ const Index = () => {
           {/* Left Column - User Actions */}
           <div className="space-y-6">
             <CounterCard
-              counter={state.counter}
+              counter={counter}
               wallet={wallet}
               sponsorship={state.sponsorship}
               transaction={state.transaction}
-              onIncrement={actions.incrementCounter}
+              isIncrementing={counter.isIncrementing}
+              onIncrement={counter.increment}
               onRefresh={actions.refreshCounter}
             />
 
