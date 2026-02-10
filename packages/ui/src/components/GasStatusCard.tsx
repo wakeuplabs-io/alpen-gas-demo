@@ -170,7 +170,7 @@ export function GasStatusCard({
         </div>
 
         {/* Limits Display */}
-        {isConnected && sponsorship.status !== SponsorshipStatus.UNCHECKED && sponsorship.status !== SponsorshipStatus.CHECKING && (
+        {isConnected && ([SponsorshipStatus.ELIGIBLE, SponsorshipStatus.CHECKING].includes(sponsorship.status)) && (
           <div className="border-t border-border pt-3 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Daily remaining:</span>
@@ -205,3 +205,4 @@ export function GasStatusCard({
     </Card>
   );
 }
+

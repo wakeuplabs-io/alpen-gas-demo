@@ -1,12 +1,13 @@
-import { isAddress } from 'ethers';
 import { z } from 'zod';
+import { isAddress } from 'ethers';
+import { Address } from '@/types/wallet';
 
 const EnvSchema = z.object({
   VITE_PRIVY_APP_ID: z.string().default(''),
   VITE_PRIVY_CLIENT_ID: z.string().default(''),
   VITE_COUNTER_CONTRACT: z.string().refine((value) => isAddress(value), {
     message: 'VITE_COUNTER_CONTRACT must be a valid address',
-  }),
+  }).transform((value) => value as Address),
   VITE_API_URL: z.string().default('http://localhost:5000'),
 });
 
@@ -30,6 +31,6 @@ if (!parsedEnv?.VITE_PRIVY_CLIENT_ID) {
 export const env = {
   privyAppId: parsedEnv?.VITE_PRIVY_APP_ID,
   privyClientId: parsedEnv?.VITE_PRIVY_CLIENT_ID,
-  counterAddress: parsedEnv?.VITE_COUNTER_CONTRACT as `0x${string}`,
+  counterAddress: parsedEnv?.VITE_COUNTER_CONTRACT as Address,
   apiUrl: parsedEnv?.VITE_API_URL,
 } as const;
