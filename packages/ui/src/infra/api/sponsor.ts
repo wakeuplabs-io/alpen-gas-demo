@@ -9,6 +9,7 @@ export interface RequestSponsorshipResponse {
   reason: string | null;
   dailyLimit: number;
   dailyUsage: number;
+  globalDailyLimit: number;
 }
 
 /**

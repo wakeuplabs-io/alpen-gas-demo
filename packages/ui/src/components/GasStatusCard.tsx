@@ -1,12 +1,12 @@
-import { AlertTriangle, Clock, Shield, Loader2, Check, XCircle, WifiOff, ArrowRightLeft } from "lucide-react";
+import { AlertTriangle, Shield, Loader2, Check, XCircle, WifiOff, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { SponsorshipState } from "@/types/demo";
 import { Wallet } from "@/types/wallet";
-import { MOCK_DATA } from "@/types/demo";
+import { SponsorshipState, SponsorshipStatus } from "@/types/sponsorship";
 import { WalletStatus } from "@/types/wallet";
 import { formatBalance } from "@/lib/balance";
+import { CHAIN } from "@/lib/network";
 
 interface GasStatusCardProps {
   wallet: Wallet;
@@ -23,12 +23,6 @@ export function GasStatusCard({
   onViewPolicy,
   onSwitchNetwork,
 }: GasStatusCardProps) {
-  const formatCooldown = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
   const isConnected = wallet.status === WalletStatus.CONNECTED;
   const isWrongNetwork = wallet.status === WalletStatus.WRONG_NETWORK;
 
@@ -56,7 +50,7 @@ export function GasStatusCard({
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Please switch to <strong>{MOCK_DATA.chainName}</strong> (Chain ID: {MOCK_DATA.chainId}) to continue.
+            Please switch to <strong>{CHAIN.name}</strong> (Chain ID: {CHAIN.id}) to continue.
           </p>
           <Button onClick={onSwitchNetwork} className="w-full">
             <ArrowRightLeft className="h-4 w-4 mr-2" />
@@ -95,7 +89,7 @@ export function GasStatusCard({
             <div className="text-sm">
               <p className="text-warning font-medium">No BTC for transaction fees</p>
               <p className="text-muted-foreground mt-0.5">
-                You don't have BTC for transaction fees on {MOCK_DATA.chainName}.
+                You don't have BTC for transaction fees on {CHAIN.name}.
               </p>
             </div>
           </div>
@@ -103,7 +97,7 @@ export function GasStatusCard({
 
         {/* Sponsorship Status */}
         <div className="space-y-3">
-          {sponsorship.status === "unchecked" && (
+          {sponsorship.status === SponsorshipStatus.UNCHECKED && (
             <Button
               onClick={onRequestSponsorship}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
@@ -113,14 +107,14 @@ export function GasStatusCard({
             </Button>
           )}
 
-          {sponsorship.status === "checking" && (
+          {sponsorship.status === SponsorshipStatus.CHECKING && (
             <div className="flex items-center justify-center gap-2 py-3 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="text-sm">Checking eligibility...</span>
             </div>
           )}
 
-          {sponsorship.status === "eligible" && (
+          {sponsorship.status === SponsorshipStatus.ELIGIBLE && (
             <div className="bg-success/10 border border-success/30 rounded-lg p-3 slide-up">
               <div className="flex items-center gap-2 text-success mb-2">
                 <Check className="h-4 w-4" />
@@ -132,25 +126,7 @@ export function GasStatusCard({
             </div>
           )}
 
-          {sponsorship.status === "cooldown" && (
-            <div className="bg-muted/50 border border-border rounded-lg p-3 slide-up">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium text-muted-foreground">Cooldown Active</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Next sponsored tx in:</span>
-                <span className="font-mono text-lg font-semibold text-foreground">
-                  {formatCooldown(sponsorship.cooldownSeconds)}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                To prevent abuse, sponsorship is rate limited per wallet.
-              </p>
-            </div>
-          )}
-
-          {sponsorship.status === "daily-limit" && (
+          {sponsorship.status === SponsorshipStatus.DAILY_LIMIT && (
             <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 slide-up">
               <div className="flex items-center gap-2 text-destructive mb-2">
                 <XCircle className="h-4 w-4" />
@@ -162,14 +138,14 @@ export function GasStatusCard({
             </div>
           )}
 
-          {sponsorship.status === "policy-deny" && (
+          {sponsorship.status === SponsorshipStatus.POLICY_DENY && (
             <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 slide-up">
               <div className="flex items-center gap-2 text-destructive mb-2">
                 <XCircle className="h-4 w-4" />
                 <span className="font-medium">Policy Denied</span>
               </div>
               <p className="text-sm text-muted-foreground mb-2">
-                {sponsorship.reason || "This operation is not covered by the sponsorship policy."}
+                This operation is not covered by the sponsorship policy.
               </p>
               <Button variant="link" className="h-auto p-0 text-primary" onClick={onViewPolicy}>
                 View policy →
@@ -177,7 +153,7 @@ export function GasStatusCard({
             </div>
           )}
 
-          {sponsorship.status === "service-down" && (
+          {sponsorship.status === SponsorshipStatus.SERVICE_DOWN && (
             <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 slide-up">
               <div className="flex items-center gap-2 text-destructive mb-2">
                 <WifiOff className="h-4 w-4" />
@@ -194,7 +170,7 @@ export function GasStatusCard({
         </div>
 
         {/* Limits Display */}
-        {isConnected && sponsorship.status !== "unchecked" && sponsorship.status !== "checking" && (
+        {isConnected && ([SponsorshipStatus.ELIGIBLE, SponsorshipStatus.CHECKING].includes(sponsorship.status)) && (
           <div className="border-t border-border pt-3 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Daily remaining:</span>
@@ -229,3 +205,4 @@ export function GasStatusCard({
     </Card>
   );
 }
+

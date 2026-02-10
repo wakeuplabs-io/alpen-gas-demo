@@ -44,3 +44,4 @@ packages/ui/cache
 .sst
 /packages/contracts/broadcast
 /packages/contracts/lib
+packages/contracts/broadcast/*

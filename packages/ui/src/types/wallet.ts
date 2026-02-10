@@ -7,6 +7,9 @@ export enum WalletStatus {
 
 export interface Wallet {
   status: WalletStatus;
-  address: `0x${string}` | null;
+  address: Address | null;
+  operationalAddress: Address | null;
   balance: string;
 }
+
+export type Address = `0x${string}`;

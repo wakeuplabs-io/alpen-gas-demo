@@ -11,4 +11,5 @@ export interface SponsorshipState {
   status: SponsorshipStatus;
   dailyRemaining: number;
   dailyLimit: number;
+  globalDailyLimit: number;
 }

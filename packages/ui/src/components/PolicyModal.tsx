@@ -6,14 +6,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { MOCK_DATA } from '@/types/demo';
+import { CHAIN } from '@/lib/network';
+import { env } from '@/config/env';
+import { SponsorshipState } from '@/types/sponsorship';
 
 interface PolicyModalProps {
+  sponsorship: SponsorshipState;
   open: boolean;
   onClose: () => void;
 }
 
-export function PolicyModal({ open, onClose }: PolicyModalProps) {
+export function PolicyModal({ sponsorship, open, onClose }: PolicyModalProps) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-lg bg-card border-border">
@@ -38,11 +41,11 @@ export function PolicyModal({ open, onClose }: PolicyModalProps) {
             <div className="bg-muted/30 rounded-lg p-3 space-y-2 font-mono text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Chain:</span>
-                <span>{MOCK_DATA.chainName} (ID: {MOCK_DATA.chainId})</span>
+                <span>{CHAIN.name} (ID: {CHAIN.id})</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Contract:</span>
-                <span className="text-xs">{MOCK_DATA.counterContract}</span>
+                <span className="text-xs">{env.counterAddress}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Function:</span>
@@ -59,16 +62,12 @@ export function PolicyModal({ open, onClose }: PolicyModalProps) {
             </h4>
             <div className="bg-muted/30 rounded-lg p-3 space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Per-wallet cooldown:</span>
-                <span className="font-mono">{MOCK_DATA.cooldownDuration}s</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-muted-foreground">Per-wallet daily limit:</span>
-                <span className="font-mono">{MOCK_DATA.dailyLimit} sponsored tx/day</span>
+                <span className="font-mono">{sponsorship.dailyLimit} sponsored tx/day</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Global budget:</span>
-                <span className="font-mono">$100/day equivalent</span>
+                <span className="font-mono">{sponsorship.globalDailyLimit} sponsored tx/day</span>
               </div>
             </div>
           </div>

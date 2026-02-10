@@ -1,3 +1,5 @@
+import { SponsorshipState } from "./sponsorship";
+
 export type WalletStatus = 'disconnected' | 'connecting' | 'connected' | 'wrong-network';
 
 export type SponsorshipStatus = 
@@ -22,14 +24,6 @@ export interface WalletState {
   status: WalletStatus;
   address: string | null;
   balanceSats: number;
-}
-
-export interface SponsorshipState {
-  status: SponsorshipStatus;
-  cooldownSeconds: number;
-  dailyRemaining: number;
-  dailyLimit: number;
-  reason?: string;
 }
 
 export interface CounterState {
