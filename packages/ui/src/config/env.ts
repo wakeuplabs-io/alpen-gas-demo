@@ -9,6 +9,12 @@ const EnvSchema = z.object({
     message: 'VITE_COUNTER_CONTRACT must be a valid address',
   }).transform((value) => value as Address),
   VITE_API_URL: z.string().default('http://localhost:5000'),
+  VITE_BATCH_CALL_AND_SPONSOR: z.string().refine((value) => isAddress(value), {
+    message: 'BATCH_CALL_AND_SPONSOR_ADDRESS must be a valid address',
+  }).transform((value) => value as Address),
+  VITE_SPONSOR_WHITELIST: z.string().refine((value) => isAddress(value), {
+    message: 'SPONSOR_WHITELIST_ADDRESS must be a valid address',
+  }).transform((value) => value as Address),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -32,5 +38,7 @@ export const env = {
   privyAppId: parsedEnv?.VITE_PRIVY_APP_ID,
   privyClientId: parsedEnv?.VITE_PRIVY_CLIENT_ID,
   counterAddress: parsedEnv?.VITE_COUNTER_CONTRACT as Address,
+  batchCallAndSponsorAddress: parsedEnv?.VITE_BATCH_CALL_AND_SPONSOR as Address,
+  sponsorWhitelistAddress: parsedEnv?.VITE_SPONSOR_WHITELIST as Address,
   apiUrl: parsedEnv?.VITE_API_URL,
 } as const;

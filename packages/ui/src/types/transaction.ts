@@ -8,13 +8,15 @@ export enum TransactionStatus {
   FAILED = 'failed',
 }
 
-
 export interface TransactionState {
   status: TransactionStatus;
   txHash?: string;
   explorerUrl?: string;
-  onTransactionStatusChangeToPreparing: () => void;
-  onTransactionStatusChangeToPending: (hash: string) => void;
-  onTransactionStatusChangeToSuccess: () => void;
-  onTransactionStatusChangeToFailed: () => void;
+}
+
+export interface TransactionActions {
+  startTransaction: () => void;
+  signTransaction: () => Promise<string>;
+  transactTransaction: (signature: string) => Promise<void>;
+  resetTransaction: () => void;
 }

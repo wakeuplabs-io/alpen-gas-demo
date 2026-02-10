@@ -1,4 +1,4 @@
-import { Shield, ExternalLink } from 'lucide-react';
+import { Shield, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -6,16 +6,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { MOCK_DATA } from '@/types/demo';
+import { env } from '@/config/env';
+import { CHAIN, EXPLORER_URL } from '@/lib/network';
+import { Address } from '@/types/wallet';
 
 interface WalletSignatureModalProps {
   open: boolean;
-  onSign: () => void;
+  wallet: Address;
+  isLoading: boolean;
+  onSign: () => Promise<void>;
   onReject: () => void;
 }
 
 export function WalletSignatureModal({
   open,
+  wallet,
+  isLoading,
   onSign,
   onReject,
 }: WalletSignatureModalProps) {
@@ -34,7 +40,7 @@ export function WalletSignatureModal({
           <div className="bg-muted/50 rounded-lg p-3 border border-border">
             <div className="text-xs text-muted-foreground mb-1">External Wallet Request</div>
             <div className="font-mono text-sm truncate">
-              {MOCK_DATA.mockAddress}
+              {wallet}
             </div>
           </div>
 
@@ -59,17 +65,24 @@ export function WalletSignatureModal({
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Network:</span>
               <span>
-                {MOCK_DATA.chainName}
+                {CHAIN.name} ({CHAIN.id})
                 <span className="text-muted-foreground ml-1">(gas in BTC)</span>
               </span>
             </div>
 
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Contract:</span>
-              <span className="font-mono text-xs">
-                {MOCK_DATA.counterContract.slice(0, 10)}...
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-0 font-mono text-xs hover:bg-transparent"
+                onClick={() => {
+                  window.open(`${EXPLORER_URL}/address/${env.counterAddress}`, '_blank');
+                }}
+              >
+                {env.counterAddress.slice(0, 6)}...{env.counterAddress.slice(-4)}
                 <ExternalLink className="h-3 w-3 inline ml-1 text-muted-foreground" />
-              </span>
+              </Button>
             </div>
           </div>
 
@@ -87,14 +100,23 @@ export function WalletSignatureModal({
               variant="outline"
               className="flex-1"
               onClick={onReject}
+              disabled={isLoading}
             >
               Reject
             </Button>
             <Button
               className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={onSign}
+              disabled={isLoading}
             >
-              Sign
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Signing...
+                </>
+              ) : (
+                'Sign'
+              )}
             </Button>
           </div>
         </div>
