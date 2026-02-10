@@ -6,8 +6,6 @@ import { CHAIN_ID, PROVIDER } from "@/lib/network";
 import { BATCH_CALL_AND_SPONSOR_ADDRESS } from "@/infra/contracts";
 import { getContractNonce } from "@/infra/contracts/delegated";
 
-import { TransactionState } from "@/types/transaction";
-
 import { useWallet } from "./use-wallet";
 import { useDelegateSetup } from "./use-delegate-setup";
 import { useDelegateTransact } from "./use-delegate-transact";
@@ -18,14 +16,15 @@ interface Call {
   data: string;
 }
 
-export function useDelegate(transaction: TransactionState) {
+
+export function useDelegate() {
   const { operationalAddress: user } = useWallet();
   const { signMessage } = useSignMessage();
   const { signAuthorization } = useSign7702Authorization();
-  const { mutateAsync: setupDelegate } = useDelegateSetup();
-  const { mutateAsync: transactDelegate } = useDelegateTransact();
+  const { mutateAsync: callDelegateSetup } = useDelegateSetup();
+  const { mutateAsync: callDelegateTransact } = useDelegateTransact();
 
-  const setup = async ({ implementation }: { implementation: string }) => {
+  const setupDelegate = async ({ implementation }: { implementation: string }) => {
     if (!user) {
       throw new Error("User address not found");
     }
@@ -43,7 +42,7 @@ export function useDelegate(transaction: TransactionState) {
       nonce: currentNonce,
     });
 
-    const result = await setupDelegate({
+    const result = await callDelegateSetup({
       user,
       authorization: {
         ...authorization,
@@ -54,13 +53,10 @@ export function useDelegate(transaction: TransactionState) {
     return result;
   }
 
-  const transact = async ({ calls }: { calls: Call[] }) => {
-    transaction.onTransactionStatusChangeToPreparing();
+  const signTransaction = async ({ calls }: { calls: Call[] }) => {
     if (!user) {
       throw new Error("Please connect your wallet first");
     }
-
-    await setup({ implementation: BATCH_CALL_AND_SPONSOR_ADDRESS });
 
     const accountCode = await PROVIDER.getCode(user);
     if (!accountCode || accountCode === "0x" || accountCode === "0x0" || accountCode.length <= 2) {
@@ -90,19 +86,26 @@ export function useDelegate(transaction: TransactionState) {
     // User signs the digest
     const { signature } = await signMessage({ message: digest }, {
       uiOptions: {
-        showWalletUIs: true,
+        showWalletUIs: false,
       }
     });
 
-    const result = await transactDelegate({
+    return signature;
+  }
+
+  const transactDelegate = async ({ calls, signature }: { calls: Call[]; signature: string }) => {
+    if (!user) {
+      throw new Error("Please connect your wallet first");
+    }
+
+    const result = await callDelegateTransact({
       user,
       calls,
       signature,
     });
     
-    transaction.onTransactionStatusChangeToPending(result.hash);
-    transaction.onTransactionStatusChangeToSuccess();
+    return result;
   }
 
-  return { setup, transact };
+  return { setupDelegate, signTransaction,  transactDelegate };
 }

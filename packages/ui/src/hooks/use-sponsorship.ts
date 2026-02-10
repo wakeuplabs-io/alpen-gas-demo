@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { SponsorshipState, SponsorshipStatus } from "@/types/sponsorship";
 import { useWallet } from "./use-wallet";
 import { useRequestSponsorship } from "./use-request-sponsorship";
@@ -11,15 +11,23 @@ const DEFAULT_SPONSORSHIP_STATE: SponsorshipState = {
 };
 
 export function useSponsorship() {
+  const [enabled, setEnabled] = useState(false);
+
+  // Hooks
   const { address, operationalAddress } = useWallet();
   const { data, isLoading, error, refetch } = useRequestSponsorship(
     address || undefined,
     operationalAddress || undefined,
+    { enabled }
   );
 
   const sponsorship = useMemo<SponsorshipState>(() => {
     if (isLoading) {
       return { ...DEFAULT_SPONSORSHIP_STATE, status: SponsorshipStatus.CHECKING };
+    }
+
+    if (!enabled) {
+      return { ...DEFAULT_SPONSORSHIP_STATE, status: SponsorshipStatus.UNCHECKED };
     }
 
     if (error || !data) {
@@ -51,6 +59,8 @@ export function useSponsorship() {
     if (!address && !operationalAddress) {
       throw new Error("Wallet address not available");
     }
+
+    setEnabled(true);
 
     try {
       const result = await refetch();

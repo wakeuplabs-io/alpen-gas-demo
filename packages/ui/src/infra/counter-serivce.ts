@@ -1,6 +1,7 @@
 import { Contract } from "ethers";
 import { PROVIDER } from "@/lib/network";
 import { COUNTER_ABI, COUNTER_ADDRESS } from "./contracts";
+import { Call } from "@/types/delegate";
 
 const counterContract = new Contract(COUNTER_ADDRESS, COUNTER_ABI, PROVIDER);
 
@@ -17,3 +18,11 @@ export class CounterService {
     }
   }
 }
+
+export const IncrementCall: Call = 
+  {
+    to: COUNTER_ADDRESS,
+    value: "0",
+     data: counterContract.interface.encodeFunctionData("increment"),
+
+  } as Call;

@@ -9,14 +9,16 @@ import { DeveloperPanel } from '@/components/DeveloperPanel';
 import { WalletSignatureModal } from '@/components/WalletSignatureModal';
 import { PolicyModal } from '@/components/PolicyModal';
 import { HelpModal } from '@/components/HelpModal';
-import { DemoControls } from '@/components/DemoControls';
 
 import { useDemoState } from '@/hooks/useDemoState';
 import { useWallet } from '@/hooks/use-wallet';
 import { useCounter } from '@/hooks/use-counter';
 import { useSponsorship } from '@/hooks/use-sponsorship';
+import { useLastEvent } from '@/hooks/use-last-event';
+import { useTransaction } from '@/hooks/use-transaction';
 
 import { TransactionStatus } from '@/types/transaction';
+import { Address } from '@/types/wallet';
 
 import { CHAIN_ID } from '@/lib/network';
 
@@ -31,7 +33,9 @@ const Index = () => {
   const { wallets } = useWallets();
   const wallet = useWallet();
   const counter = useCounter();
+  const { state: transaction, actions: transactionActions } = useTransaction();
   const { sponsorship, checkEligibility } = useSponsorship();
+  const { lastEvent } = useLastEvent();
   
 
   const handleSwitchNetwork = async () => {
@@ -52,6 +56,11 @@ const Index = () => {
     }
   };
 
+  const handleSignTransaction = async () => {
+    const signature = await transactionActions.signTransaction();
+    await transactionActions.transactTransaction(signature);
+  }
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -66,12 +75,13 @@ const Index = () => {
           {/* Left Column - User Actions */}
           <div className="space-y-6">
             <CounterCard
-              counter={counter}
+              count={counter.count}
+              lastEvent={lastEvent}
               wallet={wallet}
               sponsorship={sponsorship}
-              transaction={counter.transaction}
-              onIncrement={counter.increment}
-              onRefresh={actions.refreshCounter}
+              transaction={transaction}
+              onIncrement={transactionActions.startTransaction}
+              onRefresh={actions.refreshCounter} // TODO: Implement refresh counter
             />
 
             <GasStatusCard
@@ -91,12 +101,6 @@ const Index = () => {
       </main>
 
       {/* Modals */}
-      <WalletSignatureModal
-        open={state.transaction.status === 'awaiting-signature'}
-        onSign={actions.signTransaction}
-        onReject={actions.rejectTransaction}
-      />
-
       <PolicyModal
         sponsorship={sponsorship}
         open={showPolicy}
@@ -108,13 +112,14 @@ const Index = () => {
         onClose={() => setShowHelp(false)}
       />
 
-      {/* Demo Controls */}
-      <DemoControls
-        onForceWalletStatus={actions.forceWalletStatus}
-        onForceSponsorshipStatus={actions.forceSponsorshipStatus}
-        onForceTransactionStatus={(status) => actions.forceTransactionStatus(status as TransactionStatus)}
-        onReset={actions.resetDemo}
+      <WalletSignatureModal 
+        wallet={wallet.address as Address}
+        open={transaction.status === TransactionStatus.AWAITING_SIGNATURE}
+        isLoading={transaction.status === TransactionStatus.PENDING}
+        onSign={handleSignTransaction}
+        onReject={transactionActions.resetTransaction}
       />
+
     </div>
   );
 };
