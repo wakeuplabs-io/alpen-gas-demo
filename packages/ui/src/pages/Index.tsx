@@ -16,6 +16,8 @@ import { useWallet } from '@/hooks/use-wallet';
 import { useCounter } from '@/hooks/use-counter';
 import { useSponsorship } from '@/hooks/use-sponsorship';
 
+import { TransactionStatus } from '@/types/transaction';
+
 import { CHAIN_ID } from '@/lib/network';
 
 const Index = () => {
@@ -96,6 +98,7 @@ const Index = () => {
       />
 
       <PolicyModal
+        sponsorship={sponsorship}
         open={showPolicy}
         onClose={() => setShowPolicy(false)}
       />
@@ -109,7 +112,7 @@ const Index = () => {
       <DemoControls
         onForceWalletStatus={actions.forceWalletStatus}
         onForceSponsorshipStatus={actions.forceSponsorshipStatus}
-        onForceTransactionStatus={actions.forceTransactionStatus}
+        onForceTransactionStatus={(status) => actions.forceTransactionStatus(status as TransactionStatus)}
         onReset={actions.resetDemo}
       />
     </div>

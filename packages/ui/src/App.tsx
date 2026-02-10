@@ -5,7 +5,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Providers } from "./providers";
 import Index from "./pages/Index";
-import WalletDemo from "./pages/WalletDemo";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -17,8 +16,6 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/wallet-demo" element={<WalletDemo />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

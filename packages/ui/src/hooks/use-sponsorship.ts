@@ -1,68 +1,96 @@
-import { useState, useCallback } from "react";
+import { useMemo } from "react";
 import { SponsorshipState, SponsorshipStatus } from "@/types/sponsorship";
-import { checkSponsorshipEligibility } from "@/infra/contracts/sponsor-whitelist";
 import { useWallet } from "./use-wallet";
+import { useRequestSponsorship } from "./use-request-sponsorship";
+
+const DEFAULT_SPONSORSHIP_STATE: SponsorshipState = {
+  status: SponsorshipStatus.UNCHECKED,
+  dailyRemaining: 0,
+  dailyLimit: 0,
+  globalDailyLimit: 0,
+};
 
 export function useSponsorship() {
   const { address, operationalAddress } = useWallet();
-  const [sponsorship, setSponsorship] = useState<SponsorshipState>({
-    status: SponsorshipStatus.UNCHECKED,
-    dailyRemaining: 0,
-    dailyLimit: 0,
-  });
-  const [error, setError] = useState<Error | null>(null);
+  const { data, isLoading, error, refetch } = useRequestSponsorship(
+    address || undefined,
+    operationalAddress || undefined,
+  );
 
+  const sponsorship = useMemo<SponsorshipState>(() => {
+    if (isLoading) {
+      return { ...DEFAULT_SPONSORSHIP_STATE, status: SponsorshipStatus.CHECKING };
+    }
 
-  /**
-   * Checks sponsorship eligibility for the current wallet address
-   * Queries the SponsorWhitelist contract on the blockchain to determine if the wallet can receive gas sponsorship
-   */
-  const checkEligibility = useCallback(async (): Promise<SponsorshipState> => {
-    if (!address || !operationalAddress) {
+    if (error || !data) {
+      return { ...DEFAULT_SPONSORSHIP_STATE, status: SponsorshipStatus.SERVICE_DOWN };
+    }
+
+    let status: SponsorshipStatus = SponsorshipStatus.ELIGIBLE;
+    if (!data.eligible) {
+      if (data.reason === "DailyLimitReached") {
+        status = SponsorshipStatus.DAILY_LIMIT;
+      } else if (data.reason === "WalletNotEligible") {
+        status = SponsorshipStatus.POLICY_DENY;
+      } else {
+        status = SponsorshipStatus.POLICY_DENY;
+      }
+    }
+
+    const dailyRemaining = Math.max(0, data.dailyLimit - data.dailyUsage);
+
+    return {
+      status,
+      dailyRemaining,
+      dailyLimit: data.dailyLimit,
+      globalDailyLimit: data.globalDailyLimit,
+    };
+  }, [data, isLoading, error]);
+
+  const checkEligibility = async (): Promise<SponsorshipState> => {
+    if (!address && !operationalAddress) {
       throw new Error("Wallet address not available");
     }
 
-    setError(null);
-    setSponsorship((prev) => ({ ...prev, status: SponsorshipStatus.CHECKING }));
-
     try {
-      const result = await checkSponsorshipEligibility(address, operationalAddress);
+      const result = await refetch();
+      if (result.error) {
+        throw result.error;
+      }
+
+      if (!result.data) {
+        throw new Error("No data received");
+      }
 
       let status: SponsorshipStatus = SponsorshipStatus.ELIGIBLE;
-      if (!result.eligible) {
-        if (result.reason === "DailyLimitReached") {
+      if (!result.data.eligible) {
+        if (result.data.reason === "DailyLimitReached") {
           status = SponsorshipStatus.DAILY_LIMIT;
-        } else if (result.reason === "WalletNotEligible") {
+        } else if (result.data.reason === "WalletNotEligible") {
           status = SponsorshipStatus.POLICY_DENY;
         } else {
           status = SponsorshipStatus.POLICY_DENY;
         }
       }
 
-      const newSponsorship: SponsorshipState = {
-        status,
-        dailyRemaining: result.dailyRemaining,
-        dailyLimit: result.dailyLimit,
-      };
+      const dailyRemaining = Math.max(0, result.data.dailyLimit - result.data.dailyUsage);
 
-      setSponsorship(newSponsorship);
-      return newSponsorship;
+      return {
+        status,
+        dailyRemaining,
+        dailyLimit: result.data.dailyLimit,
+        globalDailyLimit: result.data.globalDailyLimit,
+      };
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to check sponsorship eligibility");
-      setError(error);
-      setSponsorship((prev) => ({
-        ...prev,
-        status: SponsorshipStatus.SERVICE_DOWN,
-      }));
       throw error;
     }
-  }, [address]);
+  };
 
-
-  console.log("sponsorship", sponsorship);
   return {
     sponsorship,
     checkEligibility,
-    error,
+    error: error || null,
+    refetch,
   };
 }

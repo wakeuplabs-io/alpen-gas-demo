@@ -16,14 +16,15 @@ export interface RequestSponsorshipResponse {
  * Queries the SponsorWhitelist contract to determine if the wallet can receive gas sponsorship
  */
 export async function requestSponsorship(
-  address: string
+  address: string,
+  operationalAddress: string
 ): Promise<RequestSponsorshipResponse> {
   const response = await fetch(`${env.apiUrl}/api/sponsor/request`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ address }),
+    body: JSON.stringify({ address, operationalAddress }),
   });
 
   if (!response.ok) {
