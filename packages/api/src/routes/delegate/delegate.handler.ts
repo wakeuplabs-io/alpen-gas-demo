@@ -12,7 +12,6 @@ import { ethers } from "ethers";
 import { batchCallAndSponsor } from "../../infra/contracts/sponsor";
 import { z } from "zod";
 import { SetupRequest, TransactRequest } from "./delegate.types";
-import { env } from "../../config/env";
 
 
 /**
@@ -121,14 +120,6 @@ export const transactHandler: AppRouteHandler<TransactRoute> = async (c) => {
       BigInt(call.value || "0"),
       call.data,
     ]);
-  
-    const sponsorWhitelistAddress = env.sponsorWhitelistAddress;
-    if (!sponsorWhitelistAddress) {
-      return c.json(
-        { error: "SponsorWhitelist not configured", details: "SPONSOR_WHITELIST_ADDRESS is not set" },
-        HttpStatusCodes.INTERNAL_SERVER_ERROR
-      );
-    }
 
     const executeTx = await delegatedContract[
       "execute((address,uint256,bytes)[],bytes)"
