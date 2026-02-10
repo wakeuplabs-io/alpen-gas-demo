@@ -14,14 +14,13 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
       <RouterNavLink
         ref={ref}
         to={to}
-        className={({ isActive, isPending }) =>
-          cn(className, isActive && activeClassName, isPending && pendingClassName)
-        }
-        {...props}
-      />
-    );
-  },
-);
+        className={({ isActive, isPending }: { isActive: boolean, isPending: boolean }) =>
+        cn(className, isActive && activeClassName, isPending && pendingClassName)
+      }
+      {...props}
+    />
+  )
+});
 
 NavLink.displayName = "NavLink";
 
