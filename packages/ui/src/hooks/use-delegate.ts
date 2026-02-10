@@ -1,11 +1,16 @@
 import { keccak256, solidityPacked } from "ethers";
 import { useSign7702Authorization, useSignMessage } from "@privy-io/react-auth";
 
-import { BATCH_CALL_AND_SPONSOR_ADDRESS } from "@/infra/contracts";
 import { CHAIN_ID, PROVIDER } from "@/lib/network";
-import { delegateSetup, delegateTransact } from "@/infra/api/delegate";
-import { useWallet } from "./use-wallet";
+
+import { BATCH_CALL_AND_SPONSOR_ADDRESS } from "@/infra/contracts";
 import { getContractNonce } from "@/infra/contracts/delegated";
+
+import { TransactionState } from "@/types/transaction";
+
+import { useWallet } from "./use-wallet";
+import { useDelegateSetup } from "./use-delegate-setup";
+import { useDelegateTransact } from "./use-delegate-transact";
 
 interface Call {
   to: string;
@@ -13,10 +18,12 @@ interface Call {
   data: string;
 }
 
-export function useDelegate() {
-  const { address: user } = useWallet();
+export function useDelegate(transaction: TransactionState) {
+  const { operationalAddress: user } = useWallet();
   const { signMessage } = useSignMessage();
   const { signAuthorization } = useSign7702Authorization();
+  const { mutateAsync: setupDelegate } = useDelegateSetup();
+  const { mutateAsync: transactDelegate } = useDelegateTransact();
 
   const setup = async ({ implementation }: { implementation: string }) => {
     if (!user) {
@@ -36,15 +43,19 @@ export function useDelegate() {
       nonce: currentNonce,
     });
 
-    const result = await delegateSetup(user, {
-      ...authorization,
-      v: authorization.v?.toString() || '0',
+    const result = await setupDelegate({
+      user,
+      authorization: {
+        ...authorization,
+        v: authorization.v?.toString() || '0',
+      },
     });
 
     return result;
   }
 
   const transact = async ({ calls }: { calls: Call[] }) => {
+    transaction.onTransactionStatusChangeToPreparing();
     if (!user) {
       throw new Error("Please connect your wallet first");
     }
@@ -79,12 +90,18 @@ export function useDelegate() {
     // User signs the digest
     const { signature } = await signMessage({ message: digest }, {
       uiOptions: {
-        showWalletUIs: true
+        showWalletUIs: true,
       }
     });
 
-
-    return await delegateTransact(user, calls, signature);
+    const result = await transactDelegate({
+      user,
+      calls,
+      signature,
+    });
+    
+    transaction.onTransactionStatusChangeToPending(result.hash);
+    transaction.onTransactionStatusChangeToSuccess();
   }
 
   return { setup, transact };

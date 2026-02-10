@@ -3,10 +3,10 @@ import {
   DemoState,
   WalletStatus,
   SponsorshipStatus,
-  TransactionStatus,
   ApiTraceEntry,
   MOCK_DATA,
 } from '@/types/demo';
+import { TransactionStatus } from '@/types/transaction';
 
 const initialState: DemoState = {
   wallet: {

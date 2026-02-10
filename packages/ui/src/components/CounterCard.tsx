@@ -1,19 +1,24 @@
 import { useState, useEffect } from 'react';
 import { Plus, RefreshCw, Loader2, Check, X, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CounterState, SponsorshipState, TransactionState } from '@/types/demo';
-import { MOCK_DATA } from '@/types/demo';
-import { toast } from 'sonner';
-import { ConnectWalletButton } from './connect-wallet-button';
+
 import { Wallet } from '@/types/wallet';
+import { MOCK_DATA } from '@/types/demo';
+import { TransactionStatus } from '@/types/transaction';
+import { TransactionState } from '@/types/transaction';
+import { CounterState } from '@/types/counter';
+import { SponsorshipState, SponsorshipStatus } from '@/types/sponsorship';
+
+import { ConnectWalletButton } from './connect-wallet-button';
 
 interface CounterCardProps {
   counter: CounterState;
   wallet: Wallet;
   sponsorship: SponsorshipState;
   transaction: TransactionState;
-  isIncrementing: boolean;
   onIncrement: () => void;
   onRefresh: () => void;
 }
@@ -24,7 +29,6 @@ export function CounterCard({
   sponsorship,
   transaction,
   onIncrement,
-  isIncrementing,
   onRefresh,
 }: CounterCardProps) {
   const [isAnimating, setIsAnimating] = useState(false);
@@ -50,11 +54,10 @@ export function CounterCard({
   };
 
   const isConnected = wallet.status === 'connected';
-  /*const canIncrement = 
+  const canIncrement = 
     isConnected && 
-    sponsorship.status === 'eligible' && 
-    transaction.status === 'idle';*/
-  const canIncrement = isConnected;
+    sponsorship.status === SponsorshipStatus.ELIGIBLE && 
+    transaction.status === TransactionStatus.IDLE;
 
   const getIncrementButtonContent = () => {
     if (transaction.status === 'preparing') {
@@ -167,7 +170,7 @@ export function CounterCard({
         </div>
 
         {/* Transaction Status */}
-        {transaction.status === 'pending' && transaction.txHash && (
+        {transaction.status === TransactionStatus.PENDING && transaction.txHash && (
           <div className="bg-info/10 border border-info/30 rounded-lg p-3 slide-up">
             <div className="flex items-center gap-2 text-sm text-info mb-1">
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -179,7 +182,7 @@ export function CounterCard({
           </div>
         )}
 
-        {transaction.status === 'success' && transaction.txHash && (
+        {transaction.status === TransactionStatus.SUCCESS && transaction.txHash && (
           <div className="bg-success/10 border border-success/30 rounded-lg p-3 slide-up">
             <div className="flex items-center gap-2 text-sm text-success mb-1">
               <Check className="h-4 w-4" />
@@ -191,7 +194,7 @@ export function CounterCard({
           </div>
         )}
 
-        {transaction.status === 'rejected' && (
+        {transaction.status === TransactionStatus.REJECTED && (
           <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 slide-up">
             <div className="flex items-center gap-2 text-sm text-destructive">
               <X className="h-4 w-4" />
@@ -215,16 +218,9 @@ export function CounterCard({
                     : 'bg-primary hover:bg-primary/90'
                 } text-primary-foreground`}
                 onClick={onIncrement}
-                disabled={!canIncrement || isIncrementing}
+                disabled={!canIncrement || transaction.status !== 'idle'}
               >
-                {isIncrementing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Incrementing...
-                  </>
-                ) : (
-                  getIncrementButtonContent()
-                )}
+                {getIncrementButtonContent()}
               </Button>
               <Button
                 variant="outline"

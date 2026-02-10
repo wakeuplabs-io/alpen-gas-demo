@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { useLogout, useWallets } from '@privy-io/react-auth';
+
 import { TopBar } from '@/components/TopBar';
 import { CounterCard } from '@/components/CounterCard';
 import { GasStatusCard } from '@/components/GasStatusCard';
@@ -7,21 +10,29 @@ import { WalletSignatureModal } from '@/components/WalletSignatureModal';
 import { PolicyModal } from '@/components/PolicyModal';
 import { HelpModal } from '@/components/HelpModal';
 import { DemoControls } from '@/components/DemoControls';
+
 import { useDemoState } from '@/hooks/useDemoState';
-import { toast } from 'sonner';
-import { useLogout, useWallets } from '@privy-io/react-auth';
 import { useWallet } from '@/hooks/use-wallet';
-import { CHAIN_ID } from '@/lib/network';
 import { useCounter } from '@/hooks/use-counter';
+import { useSponsorship } from '@/hooks/use-sponsorship';
+
+import { TransactionStatus } from '@/types/transaction';
+
+import { CHAIN_ID } from '@/lib/network';
 
 const Index = () => {
+  // States
   const { state, actions } = useDemoState();
   const [showPolicy, setShowPolicy] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+
+  // Hooks
   const { logout } = useLogout();
   const { wallets } = useWallets();
   const wallet = useWallet();
   const counter = useCounter();
+  const { sponsorship, checkEligibility } = useSponsorship();
+  
 
   const handleSwitchNetwork = async () => {
     try {
@@ -57,17 +68,16 @@ const Index = () => {
             <CounterCard
               counter={counter}
               wallet={wallet}
-              sponsorship={state.sponsorship}
-              transaction={state.transaction}
-              isIncrementing={counter.isIncrementing}
+              sponsorship={sponsorship}
+              transaction={counter.transaction}
               onIncrement={counter.increment}
               onRefresh={actions.refreshCounter}
             />
 
             <GasStatusCard
               wallet={wallet}
-              sponsorship={state.sponsorship}
-              onRequestSponsorship={actions.checkSponsorship}
+              sponsorship={sponsorship}
+              onRequestSponsorship={checkEligibility}
               onViewPolicy={() => setShowPolicy(true)}
               onSwitchNetwork={handleSwitchNetwork}
             />
@@ -88,6 +98,7 @@ const Index = () => {
       />
 
       <PolicyModal
+        sponsorship={sponsorship}
         open={showPolicy}
         onClose={() => setShowPolicy(false)}
       />
@@ -101,7 +112,7 @@ const Index = () => {
       <DemoControls
         onForceWalletStatus={actions.forceWalletStatus}
         onForceSponsorshipStatus={actions.forceSponsorshipStatus}
-        onForceTransactionStatus={actions.forceTransactionStatus}
+        onForceTransactionStatus={(status) => actions.forceTransactionStatus(status as TransactionStatus)}
         onReset={actions.resetDemo}
       />
     </div>

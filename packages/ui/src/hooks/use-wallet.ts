@@ -1,4 +1,4 @@
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { usePrivy, useWallets, useUser } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import { PROVIDER, CHAIN_ID } from "@/lib/network";
 import { Wallet, WalletStatus } from "@/types/wallet";
@@ -6,19 +6,35 @@ import { Wallet, WalletStatus } from "@/types/wallet";
 export function useWallet() {
   const { ready, authenticated } = usePrivy();
   const { wallets } = useWallets();
+  const { user } = useUser();
   const [balance, setBalance] = useState<string>('0');
 
-  const address = wallets && wallets.length > 0 ? wallets[0].address : null;
-  const chainId = wallets && wallets.length > 0 ? wallets[0].chainId : null;
 
-  // Fetch balance
+  const embeddedWallet = wallets?.find(wallet => {
+    const clientType = (wallet as any).walletClientType;
+    const connectorType = (wallet as any).connectorType;
+    return clientType === 'privy' || connectorType === 'embedded';
+  });
+  
+  const eoaAccount = user?.linkedAccounts?.find(account => {
+    if (account.type !== 'wallet') return false;
+    const walletAccount = account as any;
+    const clientType = walletAccount.walletClientType;
+    return clientType && clientType !== 'privy' && clientType !== 'embedded';
+  }) as any;
+  
+  const operationalAddress = embeddedWallet?.address || null;
+  const displayAddress = eoaAccount?.address || embeddedWallet?.address || null;
+  const address = displayAddress;
+  const chainId = wallets?.[0]?.chainId || null;
+
   useEffect(() => {
-    if (address) {
-      PROVIDER.getBalance(address as `0x${string}`).then((bal) => {
+    if (eoaAccount?.address) {
+      PROVIDER.getBalance(eoaAccount?.address as `0x${string}`).then((bal) => {
         setBalance(bal.toString());
       });
     }
-  }, [address]);
+  }, [operationalAddress]);
 
   const getStatus = () => {
     if (!ready) return WalletStatus.CONNECTING;
@@ -44,6 +60,7 @@ export function useWallet() {
   return {
     status: getStatus(),
     address: address as `0x${string}` | null,
+    operationalAddress: operationalAddress as `0x${string}` | null,
     balance,
-  } satisfies Wallet;
+  } satisfies Wallet & { operationalAddress: `0x${string}` | null };
 } 

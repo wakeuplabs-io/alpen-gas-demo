@@ -11,6 +11,7 @@ import { SetupRoute, TransactRoute } from "./delegate.routes";
 import { ethers } from "ethers";
 import { batchCallAndSponsor } from "../../infra/contracts/sponsor";
 import { z } from "zod";
+import { SetupRequest, TransactRequest } from "./delegate.types";
 
 
 /**
@@ -26,7 +27,7 @@ export const setupHandler: AppRouteHandler<SetupRoute> = async (c) => {
       );
     }
 
-    const { user, authorization } = c.req.valid("json");
+    const { user, authorization } = await c.req.json() as SetupRequest;
 
     // Validate authorization matches expected implementation
     if (batchCallAndSponsor.address && authorization.address.toLowerCase() !== batchCallAndSponsor.address.toLowerCase()) {
@@ -85,7 +86,7 @@ export const setupHandler: AppRouteHandler<SetupRoute> = async (c) => {
  */
 export const transactHandler: AppRouteHandler<TransactRoute> = async (c) => {
   try {
-    const { user, calls, signature } = c.req.valid("json");
+    const { user, calls, signature } = await c.req.json() as TransactRequest;
 
     const accountCode = await batchCallAndSponsor.provider.getCode(user);
     

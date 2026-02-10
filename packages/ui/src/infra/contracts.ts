@@ -20,6 +20,14 @@ export const COUNTER_ABI = [
   "function setNumber(uint256 newNumber) external",
 ] as const;
 
+// SponsorWhitelist contract
+export const SPONSOR_WHITELIST_ADDRESS = import.meta.env.VITE_SPONSOR_WHITELIST || "0x7bF48b3e4a3843e939823DD62d2522E675d7d7B2";
+export const SPONSOR_WHITELIST_ABI = [
+  "function checkEligibility(address wallet) external view returns (bool eligible, string memory reason)",
+  "function dailyLimit() external view returns (uint256)",
+  "function dailyUsage(address wallet) external view returns (uint256)",
+] as const;
+
 // Helper to create contract instances
 export function createContract(address: string, abi: readonly any[], provider: JsonRpcProvider = PROVIDER) {
   return new Contract(address, abi, provider);
