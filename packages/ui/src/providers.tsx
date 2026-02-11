@@ -24,6 +24,8 @@ export function Providers({ children }: ProvidersProps) {
         appId={env.privyAppId || ''}
         clientId={env.privyClientId || ''}
         config={{
+          // Only allow wallet connections, disable email login
+          loginMethods: ['wallet'],
           // Automatically create embedded wallet for all users
           embeddedWallets: {
             ethereum: {

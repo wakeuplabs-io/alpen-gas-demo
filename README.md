@@ -1,64 +1,43 @@
 # BTC-Gas EVM Counter Demo
 
-> Production-ready application demonstrating gas sponsorship on an EVM blockchain where the native gas token is BTC.
+> Application demonstrating gas sponsorship on Alpen blockchain where the native gas token is BTC.
 
-## 📚 Documentation
+## Overview
 
-This project includes comprehensive documentation for development:
+This monorepo contains a full-stack application for demonstrating gas sponsorship on the Alpen blockchain. It consists of three main packages:
 
-- **`docs/HANDOVER.md`** - Complete project overview, architecture, requirements, and implementation guide
-- **`docs/ARCHITECTURE_RULES.md`** - Detailed architecture patterns, coding standards, and examples
-- **`docs/CURSOR_SETUP.md`** - Guide for using documentation with Cursor AI
-- **`.cursorrules`** - Cursor AI configuration that references the documentation
+- **`packages/api`** - Backend API built with Hono
+- **`packages/ui`** - Frontend React application
+- **`packages/contracts`** - Smart contracts built with Foundry
 
-### For Cursor AI
+## Technologies
 
-Cursor will automatically use the documentation files when they are:
-- Located in `docs/` folder (✅ `docs/HANDOVER.md`, `docs/ARCHITECTURE_RULES.md`)
-- Referenced in `.cursorrules` (✅ already configured)
+### Backend (`packages/api`)
+- **Framework**: [Hono](https://hono.dev/) - Fast web framework
+- **Language**: TypeScript
+- **Libraries**: 
+  - `ethers` / `viem` - Blockchain interaction
+  - `zod` - Schema validation
 
-You can also reference these files manually in Cursor by using `@docs/HANDOVER.md` or `@docs/ARCHITECTURE_RULES.md` in your prompts.
+### Frontend (`packages/ui`)
+- **Framework**: [React](https://react.dev/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Language**: TypeScript
+- **Routing**: [TanStack Router](https://tanstack.com/router)
+- **State Management**: [TanStack Query](https://tanstack.com/query)
+- **Wallet**: [Privy](https://privy.io/)
+- **UI Components**: [Radix UI](https://www.radix-ui.com/)
 
-## Node and NPM version
+### Smart Contracts (`packages/contracts`)
+- **Framework**: [Foundry](https://book.getfoundry.sh/)
+- **Language**: Solidity 0.8.27
+- **EVM Version**: Cancun
 
-TL;DR
+### Package-Specific READMEs
 
-- Node version: 18.18.2
-- npm version: 9.8.1
+Each package has its own README with setup instructions:
 
-For now, **API breaks with Node > 18.18**. Node 18.18.2 is required.
+- **[`packages/api/README.md`](./packages/api/README.md)** - Backend API setup and development
+- **[`packages/ui/README.md`](./packages/ui/README.md)** - Frontend application setup and development
+- **[`packages/contracts/README.md`](./packages/contracts/README.md)** - Smart contracts setup and development
 
-Also, Node 18.18.2 comes with npm 9.8.1, so the project should work properly with it. In any case, npm workspaces were added in npm 7.0.0, so you should have at least that version (9.8.1 strongly recommended).
-
-## Create user for deployment (AWS)
-
-1. Go to IAM service
-2. Click Users --> `Create User`
-
-   ![image info](assets/create-user.png)
-
-3. Fill the user name and click on `Next`
-4. Click `Attach policies directly`, click on `AdministratorAccess` and click on `Next`
-5. Click on `Create user`
-6. View the created user.
-7. Click on the tab `Security credentials` and click on `Create access key`
-8. Click on the option `Command Line Interface (CLI)` and click on `Next`
-9. Click on the button `Create access key`
-10. Copy the keys `Access key` and `Secret access key`
-
-## Useful information if you fork this monorepo
-
-### Package lock is git ignored
-
-Intended in order to avoid merge conflicts on this repo
-
-**Don't forget to remove it from git ignore!**
-Package versions should always be defined specifically (without the simbol ^)
-This ensures that even if the lock is deleted, same versions would be reinstalled.
-
-Having the lock inside your repo is useful for CI package caching and to avoid version diff on fresh install.
-
-### Github workflow is deactivated
-
-We don't want to trigger the workflow here, but you probably want to.
-You should rename the .github/workflows-off folder to **.github/workflow**

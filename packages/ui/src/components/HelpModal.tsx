@@ -25,7 +25,7 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
 
         <div className="space-y-4 py-2">
           <p className="text-sm text-muted-foreground">
-            This demo shows how a dapp can sponsor gas fees for users who don't have the native gas token (BTC on this chain).
+            This demo shows how a dapp can sponsor gas fees for users who don't have the native gas token (BTC on this chain) using EIP-7702 delegation.
           </p>
 
           {/* Flow Diagram */}
@@ -36,40 +36,40 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium flex-shrink-0">1</div>
                 <div>
-                  <span className="font-medium">Connect</span>
-                  <p className="text-muted-foreground text-xs">User connects their SCA wallet (account abstraction)</p>
+                  <span className="font-medium">Connect Wallet</span>
+                  <p className="text-muted-foreground text-xs">User connects wallet via Privy and frontend detects 0 BTC balance</p>
                 </div>
               </div>
               
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium flex-shrink-0">2</div>
                 <div>
-                  <span className="font-medium">Check Balance</span>
-                  <p className="text-muted-foreground text-xs">Frontend detects 0 BTC balance for gas</p>
+                  <span className="font-medium">Check Eligibility</span>
+                  <p className="text-muted-foreground text-xs">Backend queries SponsorWhitelist contract (daily limit, allowlist, global cap)</p>
                 </div>
               </div>
               
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium flex-shrink-0">3</div>
                 <div>
-                  <span className="font-medium">Request Sponsorship</span>
-                  <p className="text-muted-foreground text-xs">Backend checks eligibility (cooldown, limits, allowlist)</p>
+                  <span className="font-medium">Setup Delegation</span>
+                  <p className="text-muted-foreground text-xs">User signs EIP-7702 authorization, backend submits type-4 transaction to activate delegation</p>
                 </div>
               </div>
               
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium flex-shrink-0">4</div>
                 <div>
-                  <span className="font-medium">Build UserOp</span>
-                  <p className="text-muted-foreground text-xs">Backend returns paymaster data for the operation</p>
+                  <span className="font-medium">Sign Transaction</span>
+                  <p className="text-muted-foreground text-xs">User signs transaction digest via Privy</p>
                 </div>
               </div>
               
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium flex-shrink-0">5</div>
                 <div>
-                  <span className="font-medium">Sign & Submit</span>
-                  <p className="text-muted-foreground text-xs">User signs, bundler relays, paymaster covers gas</p>
+                  <span className="font-medium">Execute & Sponsor</span>
+                  <p className="text-muted-foreground text-xs">Backend calls execute() on delegated contract, BatchCallAndSponsor validates and pays gas</p>
                 </div>
               </div>
             </div>
@@ -80,13 +80,13 @@ export function HelpModal({ open, onClose }: HelpModalProps) {
             <h4 className="text-sm font-medium">Key Concepts</h4>
             <div className="text-sm space-y-2 text-muted-foreground">
               <p>
-                <strong className="text-foreground">Paymaster:</strong> A smart contract that pays gas on behalf of users. The backend controls which operations are sponsored.
+                <strong className="text-foreground">EIP-7702 Delegation:</strong> Allows an EOA to temporarily delegate its code to a smart contract implementation.
               </p>
               <p>
-                <strong className="text-foreground">UserOperation:</strong> An ERC-4337 transaction structure that enables account abstraction and sponsored gas.
+                <strong className="text-foreground">BatchCallAndSponsor:</strong> The delegated contract that executes batched calls and validates sponsorship eligibility before paying gas fees.
               </p>
               <p>
-                <strong className="text-foreground">Rate Limiting:</strong> Per-wallet cooldowns and daily limits prevent abuse of the sponsorship budget.
+                <strong className="text-foreground">SponsorWhitelist:</strong> Smart contract that enforces sponsorship policy (daily limits, allowed contracts, global caps) to prevent abuse.
               </p>
             </div>
           </div>
