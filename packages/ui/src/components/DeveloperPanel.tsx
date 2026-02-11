@@ -1,9 +1,17 @@
 import { useState } from 'react';
-import { Code2, Activity, ChevronDown, ChevronRight, ArrowRight } from 'lucide-react';
+import { Code2, Activity, ChevronDown, ChevronRight, ArrowRight, Maximize2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { ApiTraceEntry } from '@/types/demo';
+import { MermaidDiagram } from '@/components/MermaidDiagram';
 
 interface DeveloperPanelProps {
   apiTrace: ApiTraceEntry[];
@@ -44,88 +52,137 @@ export function DeveloperPanel({ apiTrace }: DeveloperPanelProps) {
   );
 }
 
+const sequenceDiagram = `
+sequenceDiagram
+    participant Frontend
+    participant Privy
+    participant Backend
+    participant AlpenChain as Alpen Chain
+    participant Batch as BatchCall&Sponsor
+    participant Whitelist as SponsorWhitelist
+    participant Counter
+
+    Frontend->>Privy: connect()
+    Privy-->>Frontend: wallet
+
+    Frontend->>AlpenChain: getBalance(user)
+    AlpenChain-->>Frontend: 0 BTC
+
+    Frontend->>Privy: checkEligibility()
+    Privy->>Backend: checkEligibility(user)
+    Backend->>Whitelist: check
+    Whitelist-->>Backend: eligible
+    Backend-->>Privy: eligible
+    Privy-->>Frontend: eligible
+
+    Frontend->>Privy: signAuthorization()
+    Note over Privy: user signs
+    Privy-->>Frontend: authorization
+
+    Frontend->>Backend: setupDelegate(auth)
+    Backend->>Batch: type4 tx (EIP-7702)
+    Note over AlpenChain: user EOA code = 0xef0100+...
+    Batch-->>Backend: txHash
+    Backend-->>Frontend: txHash
+
+    Frontend->>Privy: signMessage(digest)
+    Note over Privy: user signs
+    Privy-->>Frontend: signature
+
+    Frontend->>Backend: transactDelegate(sig)
+    Backend->>Batch: execute(calls, sig)
+
+    Batch->>Whitelist: validateSponsorship()
+    Whitelist-->>Batch: validated
+
+    Batch->>Counter: increment()
+    Counter-->>Batch: ok
+
+    Batch-->>Backend: txHash
+    Backend-->>Frontend: txHash
+`;
+
 function DeveloperNotes() {
+  const [isDiagramModalOpen, setIsDiagramModalOpen] = useState(false);
+
   return (
-    <div className="space-y-6 text-sm">
-      {/* Overview */}
-      <section>
-        <h3 className="font-medium mb-2">Overview</h3>
-        <p className="text-muted-foreground">
-          This demo shows the minimal flow for a zero-balance SCA wallet to interact 
-          with an EVM chain where gas is paid in BTC.
-        </p>
-      </section>
+    <>
+      <div className="space-y-6 text-sm">
+        {/* Overview */}
+        <section>
+          <h3 className="font-medium mb-2">Overview</h3>
+          <p className="text-muted-foreground">
+            This demo shows the minimal flow for a zero-balance SCA wallet to interact 
+            with an EVM chain where gas is paid in BTC.
+          </p>
+        </section>
 
-      {/* Flow Bullets */}
-      <section>
-        <h3 className="font-medium mb-2">Flow Summary</h3>
-        <ul className="space-y-2 text-muted-foreground">
-          <li className="flex items-start gap-2">
-            <ArrowRight className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-            <span>Frontend detects 0 BTC balance and triggers sponsorship flow</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <ArrowRight className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-            <span>Backend enforces policy (cooldown, daily limit, allowlist, global cap)</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <ArrowRight className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-            <span>Backend returns sponsorship payload (paymaster data)</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <ArrowRight className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-            <span>User signs the UserOperation with their wallet</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <ArrowRight className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-            <span>Operation is submitted via bundler/relayer, UI reads updated state</span>
-          </li>
-        </ul>
-      </section>
+        {/* Flow Bullets */}
+        <section>
+          <h3 className="font-medium mb-2">Flow Summary</h3>
+          <ul className="space-y-2 text-muted-foreground">
+            <li className="flex items-start gap-2">
+              <ArrowRight className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+              <span>Frontend connects wallet via Privy and detects 0 BTC balance</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <ArrowRight className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+              <span>Backend checks eligibility via SponsorWhitelist contract (daily limit, allowlist, global cap)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <ArrowRight className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+              <span>User signs EIP-7702 authorization via Privy, Backend submits type-4 transaction to activate delegation</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <ArrowRight className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+              <span>User signs transaction digest via Privy, Backend calls execute() on delegated contract</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <ArrowRight className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+              <span>BatchCallAndSponsor validates sponsorship and executes calls to Counter contract</span>
+            </li>
+          </ul>
+        </section>
 
-      {/* Sequence Diagram */}
-      <section>
-        <h3 className="font-medium mb-2">Sequence</h3>
-        <div className="code-block text-xs leading-relaxed">
-          <pre className="text-muted-foreground">{`┌─────────┐    ┌─────────┐    ┌─────────┐
-│ Frontend│    │ Backend │    │  Chain  │
-└────┬────┘    └────┬────┘    └────┬────┘
-     │              │              │
-     │ getBalance() │              │
-     │─────────────►│──────────────►
-     │              │   0 BTC      │
-     │◄─────────────┼──────────────┤
-     │              │              │
-     │ checkEligibility()          │
-     │─────────────►│              │
-     │   eligible   │              │
-     │◄─────────────┤              │
-     │              │              │
-     │ buildUserOp()│              │
-     │─────────────►│              │
-     │ paymasterData│              │
-     │◄─────────────┤              │
-     │              │              │
-     │   [user signs locally]      │
-     │              │              │
-     │ submitUserOp()              │
-     │─────────────►│──────────────►
-     │              │   bundler    │
-     │   txHash     │◄─────────────┤
-     │◄─────────────┤              │
-     │              │              │`}</pre>
-        </div>
-      </section>
+        {/* Sequence Diagram */}
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-medium">Sequence</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsDiagramModalOpen(true)}
+              className="h-7 px-2 text-muted-foreground hover:text-foreground"
+            >
+              <Maximize2 className="h-3.5 w-3.5 mr-1.5" />
+              <span className="text-xs">Expand</span>
+            </Button>
+          </div>
+          <MermaidDiagram chart={sequenceDiagram} />
+        </section>
 
-      {/* Callout */}
-      <section className="bg-primary/10 border border-primary/30 rounded-lg p-3">
-        <p className="text-xs">
-          <strong className="text-primary">Note:</strong> On this chain, native gas is BTC, 
-          but the dapp interaction pattern is still EVM-style. Sponsorship covers BTC gas 
-          so users with 0 balance can still transact.
-        </p>
-      </section>
-    </div>
+        {/* Callout */}
+        <section className="bg-primary/10 border border-primary/30 rounded-lg p-3">
+          <p className="text-xs">
+            <strong className="text-primary">Note:</strong> On this chain, native gas is BTC, 
+            but the dapp interaction pattern is still EVM-style. Sponsorship covers BTC gas 
+            so users with 0 balance can still transact.
+          </p>
+        </section>
+      </div>
+
+      {/* Diagram Modal */}
+      <Dialog open={isDiagramModalOpen} onOpenChange={setIsDiagramModalOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] bg-card border-border overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Sequence Diagram</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto py-4">
+            <MermaidDiagram chart={sequenceDiagram} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

@@ -1,66 +1,140 @@
-## Foundry
+# Contracts Package
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Smart contracts for gas sponsorship on the Alpen blockchain, built with Foundry.
 
-Foundry consists of:
+## Technologies
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+- **Framework**: [Foundry](https://book.getfoundry.sh/)
+- **Language**: Solidity 0.8.27
+- **EVM Version**: Cancun
+- **Testing**: Forge (Foundry's testing framework)
 
-## Documentation
+## Local Development Setup
 
-https://book.getfoundry.sh/
+### Step 1: Install Foundry
 
-## Usage
+If you don't have Foundry installed:
 
-### Build
-
-```shell
-$ forge build
+```bash
+# Install Foundry
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
 ```
 
-### Test
+Verify installation:
 
-```shell
-$ forge test
+```bash
+forge --version
+anvil --version
+cast --version
 ```
 
-### Format
+### Step 2: Install Dependencies
 
-```shell
-$ forge fmt
+```bash
+cd packages/contracts
+
+# Install OpenZeppelin contracts (if not already installed)
+forge install OpenZeppelin/openzeppelin-contracts --no-commit
 ```
 
-### Gas Snapshots
+### Step 3: Build Contracts
 
-```shell
-$ forge snapshot
+```bash
+forge build
 ```
 
-### Anvil
+This compiles all contracts and outputs artifacts to `out/`.
 
-```shell
-$ anvil
+### Step 4: Run Tests
+
+```bash
+forge test
 ```
 
-### Deploy
+For verbose output:
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+```bash
+forge test -vvv
 ```
 
-### Cast
+## Project Structure
 
-```shell
-$ cast <subcommand>
+```
+packages/contracts/
+├── src/
+│   ├── Counter.sol              # Counter contract
+│   ├── BatchCall.sol            # Batch call contract
+│   └── SponsorWhitelist.sol     # Whitelist contract
+├── test/
+│   ├── Counter.t.sol            # Counter tests
+│   └── SponsorWhitelist.t.sol    # Whitelist tests
+├── script/
+│   ├── Counter.s.sol            # Deployment script
+│   ├── BatchCallAndSponsor.s.sol # Deployment script
+│   └── verify.sh                # Verification script
+├── foundry.toml                 # Foundry configuration
+└── lib/                         # Dependencies (OpenZeppelin, etc.)
 ```
 
-### Help
+## Contracts Overview
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+### Counter.sol
+
+Simple counter contract that can be incremented. Used as a demo contract for gas sponsorship.
+
+### BatchCall.sol
+
+Contract that allows batching multiple calls together.
+
+### SponsorWhitelist.sol
+
+Manages whitelist for gas sponsorship eligibility.
+
+## Testing
+
+### Run All Tests
+
+```bash
+forge test
+```
+
+### Run Specific Test File
+
+```bash
+forge test --match-path test/Counter.t.sol
+```
+
+## Deployment
+
+### Deploy to Testnet
+
+1. Set up your RPC URL and private key:
+
+```bash
+export RPC_URL=https://rpc.alpen.dev
+export PRIVATE_KEY=your_private_key_here
+```
+
+2. Deploy the contract:
+
+```bash
+forge script script/Counter.s.sol:CounterScript \
+  --rpc-url $RPC_URL \
+  --private-key $PRIVATE_KEY \
+  --broadcast
+```
+
+3. Verify the contract:
+
+```bash
+./script/verify.sh <deployed_address> Counter ""
+```
+
+### Missing Dependencies
+
+If tests fail due to missing dependencies:
+
+```bash
+forge install OpenZeppelin/openzeppelin-contracts --no-commit
 ```
