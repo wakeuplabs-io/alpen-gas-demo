@@ -9,6 +9,7 @@ import {
 import { CHAIN } from '@/lib/network';
 import { env } from '@/config/env';
 import { SponsorshipState } from '@/types/sponsorship';
+import { useGetRateLimits } from '@/hooks/use-get-rate-limits';
 
 interface PolicyModalProps {
   sponsorship: SponsorshipState;
@@ -16,7 +17,9 @@ interface PolicyModalProps {
   onClose: () => void;
 }
 
-export function PolicyModal({ sponsorship, open, onClose }: PolicyModalProps) {
+export function PolicyModal({ open, onClose }: PolicyModalProps) {
+  const { data: rateLimits } = useGetRateLimits();
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-lg bg-card border-border">
@@ -63,11 +66,11 @@ export function PolicyModal({ sponsorship, open, onClose }: PolicyModalProps) {
             <div className="bg-muted/30 rounded-lg p-3 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Per-wallet daily limit:</span>
-                <span className="font-mono">{sponsorship.dailyLimit} sponsored tx/day</span>
+                <span className="font-mono">{rateLimits?.dailyLimit} sponsored tx/day</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Global budget:</span>
-                <span className="font-mono">{sponsorship.globalDailyLimit} sponsored tx/day</span>
+                <span className="text-muted-foreground">Global daily limit:</span>
+                <span className="font-mono">{rateLimits?.globalDailyLimit} sponsored tx/day</span>
               </div>
             </div>
           </div>

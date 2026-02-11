@@ -10,6 +10,7 @@ export interface RequestSponsorshipResponse {
   dailyLimit: number;
   dailyUsage: number;
   globalDailyLimit: number;
+  globalDailyUsage: number;
 }
 
 /**

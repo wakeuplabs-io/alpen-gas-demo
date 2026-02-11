@@ -39,3 +39,32 @@ export async function checkSponsorshipEligibility(walletAddress: string, operati
     );
   }
 }
+
+
+export async function getGlobalDailyUsage(): Promise<number> {
+  const contract = new Contract(
+    SPONSOR_WHITELIST_ADDRESS,
+    SPONSOR_WHITELIST_ABI,
+    PROVIDER,
+  );
+  const globalDailyUsage = await contract.getTodayGlobalUsage();
+  return Number(globalDailyUsage);
+}
+
+
+export async function getRateLimits(): Promise<{
+  globalDailyLimit: number;
+  dailyLimit: number;
+}> {
+  const contract = new Contract(
+    SPONSOR_WHITELIST_ADDRESS,
+    SPONSOR_WHITELIST_ABI,
+    PROVIDER,
+  );
+  const globalDailyLimit = await contract.globalDailyLimit();
+  const dailyLimit = await contract.dailyLimit();
+  return {
+    globalDailyLimit: Number(globalDailyLimit),
+    dailyLimit: Number(dailyLimit),
+  };
+}
