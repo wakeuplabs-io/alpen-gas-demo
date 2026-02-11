@@ -15,7 +15,8 @@ contract BatchCallAndSponsorScript is Script {
         vm.startBroadcast();
 
         uint256 dailyLimit = 10;
-        sponsorWhitelist = new SponsorWhitelist(dailyLimit);
+        uint256 globalDailyLimit = 100;
+        sponsorWhitelist = new SponsorWhitelist(dailyLimit, globalDailyLimit);
         console.log("SponsorWhitelist deployed at:", address(sponsorWhitelist));
 
         batchCallAndSponsor = new BatchCallAndSponsor(address(sponsorWhitelist));
