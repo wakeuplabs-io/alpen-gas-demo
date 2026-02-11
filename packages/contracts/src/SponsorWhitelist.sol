@@ -9,6 +9,9 @@ contract SponsorWhitelist {
     mapping(address => uint256) public lastUsageDay;
 
     uint256 public dailyLimit;
+    uint256 public lastGlobalUsageTimestamp;
+    uint256 public globalDailyLimit;
+    uint256 public globalDailyUsage;
     uint256 public constant DAY_IN_SECONDS = 86400;
 
     event ContractAllowed(address indexed contractAddress, bool allowed);
@@ -19,15 +22,17 @@ contract SponsorWhitelist {
     error ContractNotAllowed(address contractAddress);
     error DailyLimitReached(address wallet);
     error WalletNotEligible(address wallet);
+    error GlobalDailyLimitReached();
 
     modifier onlyOwner() {
         if (msg.sender != owner) revert NotOwner();
         _;
     }
 
-    constructor(uint256 _dailyLimit) {
+    constructor(uint256 _dailyLimit, uint256 _globalDailyLimit) {
         owner = msg.sender;
         dailyLimit = _dailyLimit;
+        globalDailyLimit = _globalDailyLimit;
     }
 
     function transferOwnership(address newOwner) external onlyOwner {
@@ -55,6 +60,22 @@ contract SponsorWhitelist {
         return block.timestamp / DAY_IN_SECONDS;
     }
 
+    function getTodayUsage(address wallet) public view returns (uint256) {
+        uint256 currentDay = getCurrentDay();
+        if (lastUsageDay[wallet] == currentDay) {
+            return dailyUsage[wallet];
+        }
+        return 0;
+    }
+
+    function getTodayGlobalUsage() public view returns (uint256) {
+        uint256 currentDay = getCurrentDay();
+        if (lastGlobalUsageTimestamp / DAY_IN_SECONDS == currentDay) {
+            return globalDailyUsage;
+        }
+        return 0;
+    }
+
     function checkEligibility(address wallet) external view returns (bool eligible, string memory reason) {
         if (address(wallet).balance > 0) {
             return (false, "WalletNotEligible");
@@ -75,8 +96,14 @@ contract SponsorWhitelist {
             revert WalletNotEligible(wallet);
         }
 
+
         uint256 currentDay = getCurrentDay();
-        if (lastUsageDay[wallet] == 0 || lastUsageDay[wallet] != currentDay) {
+        uint256 lastGlobalUsageDay = lastGlobalUsageTimestamp / DAY_IN_SECONDS;
+        if (lastGlobalUsageDay != currentDay) {
+            globalDailyUsage = 0;
+        }
+
+        if (lastUsageDay[wallet] != currentDay) {
             dailyUsage[wallet] = 0;
             lastUsageDay[wallet] = currentDay;
         }
@@ -85,13 +112,19 @@ contract SponsorWhitelist {
             revert DailyLimitReached(wallet);
         }
 
+        if (globalDailyUsage >= globalDailyLimit) {
+            revert GlobalDailyLimitReached();
+        }
+
          for (uint256 i = 0; i < targetContracts.length; i++) {
             if (!allowedContracts[targetContracts[i]]) {
                 revert ContractNotAllowed(targetContracts[i]);
             }
         }
 
+        globalDailyUsage++;
         dailyUsage[wallet]++;
+        lastGlobalUsageTimestamp = block.timestamp;
     }
 }
 

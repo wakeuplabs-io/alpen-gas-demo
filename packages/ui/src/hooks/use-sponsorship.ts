@@ -8,6 +8,7 @@ const DEFAULT_SPONSORSHIP_STATE: SponsorshipState = {
   dailyRemaining: 0,
   dailyLimit: 0,
   globalDailyLimit: 0,
+  globalDailyUsage: 0,
 };
 
 export function useSponsorship() {
@@ -52,6 +53,7 @@ export function useSponsorship() {
       dailyRemaining,
       dailyLimit: data.dailyLimit,
       globalDailyLimit: data.globalDailyLimit,
+      globalDailyUsage: data.globalDailyUsage,
     };
   }, [data, isLoading, error]);
 
@@ -90,6 +92,7 @@ export function useSponsorship() {
         dailyRemaining,
         dailyLimit: result.data.dailyLimit,
         globalDailyLimit: result.data.globalDailyLimit,
+        globalDailyUsage: result.data.globalDailyUsage,
       };
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to check sponsorship eligibility");

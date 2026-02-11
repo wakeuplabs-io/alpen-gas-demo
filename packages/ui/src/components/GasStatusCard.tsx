@@ -83,7 +83,8 @@ export function GasStatusCard({
         </div>
 
         {/* Zero Balance Warning */}
-        {Number(wallet.balance) === 0 && sponsorship.status === SponsorshipStatus.ELIGIBLE && (
+
+        {Number(wallet.balance) === 0 && sponsorship.status === SponsorshipStatus.UNCHECKED && (
           <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 flex items-start gap-2">
             <AlertTriangle className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">
@@ -181,7 +182,7 @@ export function GasStatusCard({
             <div className="flex items-center justify-between text-sm">
               <Tooltip>
                 <TooltipTrigger className="text-muted-foreground flex items-center gap-1 cursor-help">
-                  Global budget:
+                  Global usage:
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
                   <p>
@@ -190,7 +191,9 @@ export function GasStatusCard({
                   </p>
                 </TooltipContent>
               </Tooltip>
-              <span className="status-pill status-pill-success text-[11px]">Within limit</span>
+              <span className="font-mono">
+                {sponsorship.globalDailyUsage} / {sponsorship.globalDailyLimit}
+              </span>
             </div>
             <Button
               variant="link"

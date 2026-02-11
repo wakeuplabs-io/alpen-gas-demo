@@ -28,6 +28,7 @@ export const SPONSOR_WHITELIST_ABI = [
   "function checkEligibility(address wallet) external view returns (bool eligible, string memory reason)",
   "function dailyLimit() external view returns (uint256)",
   "function dailyUsage(address wallet) external view returns (uint256)",
+  "function globalDailyLimit() external view returns (uint256)",
 ] as const;
 
 // Helper to create contract instances

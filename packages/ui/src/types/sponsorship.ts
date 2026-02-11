@@ -12,4 +12,5 @@ export interface SponsorshipState {
   dailyRemaining: number;
   dailyLimit: number;
   globalDailyLimit: number;
+  globalDailyUsage: number;
 }

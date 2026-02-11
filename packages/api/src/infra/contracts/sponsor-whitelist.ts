@@ -6,7 +6,9 @@ const provider = new ethers.JsonRpcProvider(env.rpcUrl);
 const SponsorWhitelistABI = [
   "function checkEligibility(address wallet) external view returns (bool eligible, string memory reason)",
   "function dailyLimit() external view returns (uint256)",
-  "function dailyUsage(address wallet) external view returns (uint256)",
+  "function getTodayUsage(address wallet) external view returns (uint256)",
+  "function getTodayGlobalUsage() external view returns (uint256)",
+  "function globalDailyLimit() external view returns (uint256)",
 ] as const;
 
 export interface CheckEligibilityResult {
@@ -14,6 +16,8 @@ export interface CheckEligibilityResult {
   reason: string | null;
   dailyLimit: number;
   dailyUsage: number;
+  globalDailyUsage: number;
+  globalDailyLimit: number;
 }
 
 export class SponsorWhitelistService {
@@ -39,13 +43,17 @@ export class SponsorWhitelistService {
 
       const [eligible, reason] = await contract.checkEligibility(walletAddress);
       const dailyLimit = await contract.dailyLimit();
-      const dailyUsage = await contract.dailyUsage(operationalAddress);
+      const dailyUsage = await contract.getTodayUsage(operationalAddress);
+      const globalDailyLimit = await contract.globalDailyLimit();
+      const globalDailyUsage = await contract.getTodayGlobalUsage();
 
       return {
         eligible: Boolean(eligible),
         reason: reason && reason !== "" ? String(reason) : null,
         dailyLimit: Number(dailyLimit),
         dailyUsage: Number(dailyUsage),
+        globalDailyUsage: Number(globalDailyUsage),
+        globalDailyLimit: Number(globalDailyLimit),
       };
     } catch (error) {
       throw new Error(
