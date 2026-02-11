@@ -6,16 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { Wallet } from '@/types/wallet';
-import { MOCK_DATA } from '@/types/demo';
 import { TransactionStatus } from '@/types/transaction';
 import { TransactionState } from '@/types/transaction';
-import { CounterState } from '@/types/counter';
 import { SponsorshipState, SponsorshipStatus } from '@/types/sponsorship';
+import { LastEvent } from '@/types/event';
 
 import { ConnectWalletButton } from './connect-wallet-button';
+import { COUNTER_ADDRESS } from '@/infra/contracts';
 
 interface CounterCardProps {
-  counter: CounterState;
+  count: number;
+  lastEvent?: LastEvent;
   wallet: Wallet;
   sponsorship: SponsorshipState;
   transaction: TransactionState;
@@ -24,7 +25,8 @@ interface CounterCardProps {
 }
 
 export function CounterCard({
-  counter,
+  count,
+  lastEvent,
   wallet,
   sponsorship,
   transaction,
@@ -33,16 +35,16 @@ export function CounterCard({
 }: CounterCardProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [prevCount, setPrevCount] = useState(counter.count);
+  const [prevCount, setPrevCount] = useState(count);
 
   useEffect(() => {
-    if (counter.count !== prevCount) {
+    if (count !== prevCount) {
       setIsAnimating(true);
-      setPrevCount(counter.count);
+      setPrevCount(count);
       const timer = setTimeout(() => setIsAnimating(false), 400);
       return () => clearTimeout(timer);
     }
-  }, [counter.count, prevCount]);
+  }, [count, prevCount]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -136,7 +138,7 @@ export function CounterCard({
         <CardTitle className="text-lg font-medium flex items-center gap-2">
           Counter Contract
           <span className="font-mono text-xs text-muted-foreground font-normal">
-            {MOCK_DATA.counterContract.slice(0, 10)}...
+            {COUNTER_ADDRESS.slice(0, 6)}...{COUNTER_ADDRESS.slice(-4)}
           </span>
         </CardTitle>
       </CardHeader>
@@ -147,7 +149,7 @@ export function CounterCard({
             Current Value
           </div>
           <div className={`counter-display ${isAnimating ? 'count-increment' : ''}`}>
-            {counter.count}
+            {count}
           </div>
         </div>
 
@@ -156,16 +158,16 @@ export function CounterCard({
           <div className="flex justify-between">
             <span className="text-muted-foreground">Last emitted event:</span>
             <span className="text-foreground">
-              increment()
+              {lastEvent?.eventName || '-'}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Block:</span>
-            <span className="text-foreground">#{counter.block}</span>
+            <span className="text-foreground">{lastEvent ? `#${lastEvent.block}` : '-'}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Updated:</span>
-            <span className="text-foreground">{formatTime(counter.timestamp)}</span>
+            <span className="text-foreground">{lastEvent ? formatTime(lastEvent.timestamp) : '-'}</span>
           </div>
         </div>
 
