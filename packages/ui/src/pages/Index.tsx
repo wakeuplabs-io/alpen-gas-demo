@@ -10,7 +10,6 @@ import { WalletSignatureModal } from '@/components/WalletSignatureModal';
 import { PolicyModal } from '@/components/PolicyModal';
 import { HelpModal } from '@/components/HelpModal';
 
-import { useDemoState } from '@/hooks/useDemoState';
 import { useWallet } from '@/hooks/use-wallet';
 import { useCounter } from '@/hooks/use-counter';
 import { useSponsorship } from '@/hooks/use-sponsorship';
@@ -24,7 +23,6 @@ import { CHAIN_ID } from '@/lib/network';
 
 const Index = () => {
   // States
-  const { state, actions } = useDemoState();
   const [showPolicy, setShowPolicy] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
@@ -81,7 +79,7 @@ const Index = () => {
               sponsorship={sponsorship}
               transaction={transaction}
               onIncrement={transactionActions.startTransaction}
-              onRefresh={actions.refreshCounter} // TODO: Implement refresh counter
+              onRefresh={() => {}}
             />
 
             <GasStatusCard
@@ -95,7 +93,7 @@ const Index = () => {
 
           {/* Right Column - Developer Panel */}
           <div className="lg:h-[calc(100vh-8rem)]">
-            <DeveloperPanel apiTrace={state.apiTrace} />
+            <DeveloperPanel />
           </div>
         </div>
       </main>

@@ -1,9 +1,9 @@
 import { PROVIDER } from "@/lib/network";
-import { Contract } from "ethers";
+import { createContract } from "../contracts";
 import { BATCH_CALL_AND_SPONSOR_ABI } from "../contracts";
 
 export async function getContractNonce(user: string) {
-    const delegatedContract = new Contract(
+    const delegatedContract = createContract(
       user,
       BATCH_CALL_AND_SPONSOR_ABI,
       PROVIDER,

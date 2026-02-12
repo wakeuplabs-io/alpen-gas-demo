@@ -1,6 +1,5 @@
-import { env } from "@/config/env";
 import { Authorization, Call } from "@/types/delegate";
-
+import { apiFetch } from "./client";
 
 /**
  * Sets up EIP-7702 delegation by submitting a type-4 transaction
@@ -11,7 +10,7 @@ import { Authorization, Call } from "@/types/delegate";
  * @returns 
  */
 export async function delegateSetup(user: string, authorization: Authorization) {
-  const  response = await fetch(`${env.apiUrl}/api/delegate/setup`, {
+  const response = await apiFetch("/api/delegate/setup", {
     method: "POST",
     body: JSON.stringify({ user, authorization }),
   });
@@ -26,8 +25,7 @@ export async function delegateSetup(user: string, authorization: Authorization) 
 }
 
 export async function delegateTransact(user: string, calls: Call[], signature: string) {
-
-  const response = await fetch(`${env.apiUrl}/api/delegate/transact`, {
+  const response = await apiFetch("/api/delegate/transact", {
     method: "POST",
     body: JSON.stringify({ user, calls, signature }),
   });

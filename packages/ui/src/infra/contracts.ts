@@ -1,6 +1,7 @@
-import { Contract, JsonRpcProvider } from "ethers";
+import { JsonRpcProvider } from "ethers";
 import { PROVIDER } from "../lib/network";
 import { env } from "@/config/env";
+import { createTracedContract } from "./contracts/traced-contract";
 
 // EIP-7702 implementation contract - BatchCallAndSponsor
 // This address should be set via environment variable or deployment
@@ -33,5 +34,5 @@ export const SPONSOR_WHITELIST_ABI = [
 
 // Helper to create contract instances
 export function createContract(address: string, abi: readonly any[], provider: JsonRpcProvider = PROVIDER) {
-  return new Contract(address, abi, provider);
+  return createTracedContract(address, abi, provider);
 }

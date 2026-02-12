@@ -1,6 +1,6 @@
 import { Contract } from "ethers";
 import { PROVIDER } from "@/lib/network";
-import { COUNTER_ABI, COUNTER_ADDRESS } from "./contracts";
+import { COUNTER_ABI, COUNTER_ADDRESS, createContract } from "./contracts";
 import { LastEvent } from "@/types/event";
 
 async function getContractDeploymentBlock(contractAddress: string): Promise<number> {
@@ -37,7 +37,7 @@ export class CounterEventService {
     if (!COUNTER_ADDRESS) {
       throw new Error("COUNTER_ADDRESS is not defined");
     }
-    this.counterContract = new Contract(COUNTER_ADDRESS, COUNTER_ABI, PROVIDER);
+    this.counterContract = createContract(COUNTER_ADDRESS, COUNTER_ABI, PROVIDER);
   }
 
   async getLastEvent(): Promise<LastEvent | undefined> {
