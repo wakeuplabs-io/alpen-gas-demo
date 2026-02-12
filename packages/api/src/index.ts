@@ -9,7 +9,7 @@ const port = env.port;
 export const handler = handle(app);
 
 // For local development
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production" || process.env.RENDER !== "true") {
   serve({
     fetch: app.fetch,
     port,
