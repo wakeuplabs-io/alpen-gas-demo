@@ -1,5 +1,5 @@
 import { PROVIDER } from "@/lib/network";
-import { Contract } from "ethers";
+import { createContract } from "../contracts";
 import { SPONSOR_WHITELIST_ADDRESS, SPONSOR_WHITELIST_ABI } from "../contracts";
 
 export interface SponsorWhitelistResult {
@@ -11,7 +11,7 @@ export interface SponsorWhitelistResult {
 }
 
 export async function checkSponsorshipEligibility(walletAddress: string, operationalAddress: string): Promise<SponsorWhitelistResult> {
-  const contract = new Contract(
+  const contract = createContract(
     SPONSOR_WHITELIST_ADDRESS,
     SPONSOR_WHITELIST_ABI,
     PROVIDER,
@@ -42,7 +42,7 @@ export async function checkSponsorshipEligibility(walletAddress: string, operati
 
 
 export async function getGlobalDailyUsage(): Promise<number> {
-  const contract = new Contract(
+  const contract = createContract(
     SPONSOR_WHITELIST_ADDRESS,
     SPONSOR_WHITELIST_ABI,
     PROVIDER,
@@ -56,7 +56,7 @@ export async function getRateLimits(): Promise<{
   globalDailyLimit: number;
   dailyLimit: number;
 }> {
-  const contract = new Contract(
+  const contract = createContract(
     SPONSOR_WHITELIST_ADDRESS,
     SPONSOR_WHITELIST_ABI,
     PROVIDER,

@@ -1,4 +1,5 @@
 import { JsonRpcProvider } from "ethers";
+import { createTracedProvider } from "@/infra/contracts/traced-provider";
 
 export const CHAIN = {
   id: 8150,
@@ -24,4 +25,5 @@ export const CHAIN = {
 export const RPC_URL = "https://rpc.testnet.alpenlabs.io";
 export const EXPLORER_URL = "https://explorer.testnet.alpenlabs.io";
 export const CHAIN_ID = 8150;
-export const PROVIDER = new JsonRpcProvider(RPC_URL);
+const baseProvider = new JsonRpcProvider(RPC_URL);
+export const PROVIDER = createTracedProvider(baseProvider);

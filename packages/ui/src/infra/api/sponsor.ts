@@ -1,4 +1,4 @@
-import { env } from "@/config/env";
+import { apiFetch } from "./client";
 
 export interface RequestSponsorshipRequest {
   address: string;
@@ -21,11 +21,8 @@ export async function requestSponsorship(
   address: string,
   operationalAddress: string
 ): Promise<RequestSponsorshipResponse> {
-  const response = await fetch(`${env.apiUrl}/api/sponsor/request`, {
+  const response = await apiFetch("/api/sponsor/request", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify({ address, operationalAddress }),
   });
 

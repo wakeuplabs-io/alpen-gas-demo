@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Code2, Activity, ChevronDown, ChevronRight, ArrowRight, Maximize2 } from 'lucide-react';
+import { Code2, Activity, ChevronDown, ChevronRight, ArrowRight, Maximize2, Download } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,14 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ApiTraceEntry } from '@/types/demo';
+import { ApiTraceEntry } from '@/types/api-trace';
 import { MermaidDiagram } from '@/components/MermaidDiagram';
+import { useApiTrace } from '@/contexts/api-trace-context';
 
-interface DeveloperPanelProps {
-  apiTrace: ApiTraceEntry[];
-}
-
-export function DeveloperPanel({ apiTrace }: DeveloperPanelProps) {
+export function DeveloperPanel() {
+  const { entries } = useApiTrace();
+  
   return (
     <Card className="border-border bg-card h-full">
       <Tabs defaultValue="notes" className="h-full flex flex-col">
@@ -30,9 +29,9 @@ export function DeveloperPanel({ apiTrace }: DeveloperPanelProps) {
             <TabsTrigger value="trace" className="flex items-center gap-1.5">
               <Activity className="h-3.5 w-3.5" />
               API Trace
-              {apiTrace.length > 0 && (
+              {entries.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 text-[10px] px-1">
-                  {apiTrace.length}
+                  {entries.length}
                 </Badge>
               )}
             </TabsTrigger>
@@ -44,7 +43,7 @@ export function DeveloperPanel({ apiTrace }: DeveloperPanelProps) {
             <DeveloperNotes />
           </TabsContent>
           <TabsContent value="trace" className="h-full m-0 overflow-y-auto">
-            <ApiTraceList entries={apiTrace} />
+            <ApiTraceList entries={entries} />
           </TabsContent>
         </CardContent>
       </Tabs>
@@ -188,6 +187,7 @@ function DeveloperNotes() {
 
 function ApiTraceList({ entries }: { entries: ApiTraceEntry[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const { exportTrace } = useApiTrace();
 
   const toggleExpand = (id: string) => {
     setExpanded(prev => {
@@ -211,6 +211,17 @@ function ApiTraceList({ entries }: { entries: ApiTraceEntry[] }) {
 
   return (
     <div className="space-y-2">
+      <div className="flex justify-end mb-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={exportTrace}
+          className="h-7 px-2 text-xs"
+        >
+          <Download className="h-3.5 w-3.5 mr-1.5" />
+          Export Trace
+        </Button>
+      </div>
       {entries.map(entry => (
         <div key={entry.id} className="api-trace-row">
           <div
@@ -226,7 +237,19 @@ function ApiTraceList({ entries }: { entries: ApiTraceEntry[] }) {
               <Badge 
                 variant="outline" 
                 className={`text-[10px] font-mono ${
-                  entry.method === 'GET' ? 'text-info border-info/30' : 'text-success border-success/30'
+                  entry.source === 'backend' 
+                    ? 'text-blue-500 border-blue-500/30' 
+                    : 'text-purple-500 border-purple-500/30'
+                }`}
+              >
+                {entry.source === 'backend' ? 'Backend' : 'Contract'}
+              </Badge>
+              <Badge 
+                variant="outline" 
+                className={`text-[10px] font-mono ${
+                  entry.method === 'GET' ? 'text-info border-info/30' : 
+                  entry.method === 'POST' ? 'text-success border-success/30' :
+                  'text-warning border-warning/30'
                 }`}
               >
                 {entry.method}

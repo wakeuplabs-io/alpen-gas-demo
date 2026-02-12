@@ -1,9 +1,8 @@
-import { Contract } from "ethers";
 import { PROVIDER } from "@/lib/network";
-import { COUNTER_ABI, COUNTER_ADDRESS } from "./contracts";
+import { COUNTER_ABI, COUNTER_ADDRESS, createContract } from "./contracts";
 import { Call } from "@/types/delegate";
 
-const counterContract = new Contract(COUNTER_ADDRESS, COUNTER_ABI, PROVIDER);
+const counterContract = createContract(COUNTER_ADDRESS, COUNTER_ABI, PROVIDER);
 
 export class CounterService {
 

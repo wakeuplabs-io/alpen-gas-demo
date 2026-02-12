@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/tooltip';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Wallet, WalletStatus } from '@/types/wallet';
-import { MOCK_DATA } from '@/types/demo';
+import { CHAIN, CHAIN_ID } from '@/lib/network';
 
 interface TopBarProps {
   wallet: Wallet;
@@ -30,7 +30,7 @@ export function TopBar({ wallet, onHelpClick, onDisconnect }: TopBarProps) {
           <div className="status-pill status-pill-info">
             <span className="pulse-dot bg-info" />
             <span className="font-mono text-[11px]">
-              {MOCK_DATA.chainName} (ID: {MOCK_DATA.chainId})
+              {CHAIN.name} (ID: {CHAIN_ID})
             </span>
           </div>
         </div>
