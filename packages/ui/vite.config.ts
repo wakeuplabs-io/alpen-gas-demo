@@ -14,7 +14,34 @@ export default defineConfig({
     dedupe: ["react", "react-dom"],
   },
   optimizeDeps: {
-    include: ["react", "react-dom"],
+    include: ["react", "react-dom", "@privy-io/react-auth"],
+    exclude: [],
+    esbuildOptions: {
+      target: "es2020",
+    },
+  },
+  build: {
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
+    minify: 'esbuild',
+    target: 'es2020',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // Keep Privy in its own chunk to avoid minification issues
+          if (id.includes('@privy-io/react-auth')) {
+            return 'privy';
+          }
+          // Keep React and React DOM together
+          if (id.includes('react') || id.includes('react-dom')) {
+            return 'react-vendor';
+          }
+        },
+      },
+    },
   },
   server: {
     port: 3000,
