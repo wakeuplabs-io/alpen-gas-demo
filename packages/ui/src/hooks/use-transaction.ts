@@ -4,10 +4,12 @@ import { useState } from "react";
 import { useDelegate } from "./use-delegate";
 import { env } from "@/config/env";
 import { IncrementCall } from "@/infra/counter-serivce";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function useTransaction() {
   const [status, setStatus] = useState<TransactionStatus>(TransactionStatus.IDLE);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const { setupDelegate, signTransaction: signTransactionDelegate, transactDelegate } = useDelegate();
 
 
@@ -49,11 +51,22 @@ export function useTransaction() {
 
       setStatus(TransactionStatus.SUCCESS);
       setTxHash(response.hash);
+
+      await handleRefreshTransaction();
+
     } catch (error) {
       setStatus(TransactionStatus.FAILED);
       console.error(error);
       throw error;
     }
+  }
+
+  const handleRefreshTransaction = async (): Promise<void> => {
+    await Promise.all([
+      queryClient.refetchQueries({ queryKey: ["counter"] }),
+      queryClient.refetchQueries({ queryKey: ["sponsorship"] }),
+      queryClient.refetchQueries({ queryKey: ["last-event"] }),
+    ]);
   }
 
   const resetTransaction = () => {

@@ -73,13 +73,12 @@ const Index = () => {
           {/* Left Column - User Actions */}
           <div className="space-y-6">
             <CounterCard
-              count={counter.count}
+              count={counter.data ?? 0}
               lastEvent={lastEvent}
               wallet={wallet}
               sponsorship={sponsorship}
               transaction={transaction}
               onIncrement={transactionActions.startTransaction}
-              onRefresh={() => {}}
             />
 
             <GasStatusCard

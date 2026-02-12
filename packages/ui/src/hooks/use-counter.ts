@@ -1,18 +1,12 @@
-import { useEffect, useState } from "react";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 
 import { CounterService } from "@/infra/counter-serivce";
 
 const counterService = new CounterService();
 
 export function useCounter() {
-  const [count, setCount] = useState<number>(0);
-
-  useEffect(() => {
-    counterService.getCount().then(setCount);
-  }, []);
-
-
-  return {
-    count,
-  };
+  return useQuery({
+    queryKey: ["counter"],
+    queryFn: () => counterService.getCount(),
+  }) satisfies UseQueryResult<number>;
 }

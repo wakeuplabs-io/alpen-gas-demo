@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, RefreshCw, Loader2, Check, X, AlertTriangle } from 'lucide-react';
-import { toast } from 'sonner';
+import { Plus, Loader2, Check, X, AlertTriangle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +20,6 @@ interface CounterCardProps {
   sponsorship: SponsorshipState;
   transaction: TransactionState;
   onIncrement: () => void;
-  onRefresh: () => void;
 }
 
 export function CounterCard({
@@ -31,10 +29,8 @@ export function CounterCard({
   sponsorship,
   transaction,
   onIncrement,
-  onRefresh,
 }: CounterCardProps) {
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [prevCount, setPrevCount] = useState(count);
 
   useEffect(() => {
@@ -45,15 +41,6 @@ export function CounterCard({
       return () => clearTimeout(timer);
     }
   }, [count, prevCount]);
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await onRefresh();
-    toast.success('Read from RPC: getCount() OK', {
-      duration: 2000,
-    });
-    setIsRefreshing(false);
-  };
 
   const isConnected = wallet.status === 'connected';
   const canIncrement = 
@@ -223,13 +210,6 @@ export function CounterCard({
                 disabled={!canIncrement || transaction.status !== 'idle'}
               >
                 {getIncrementButtonContent()}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-              >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
             </>
           )}
