@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Code2, Activity, ChevronDown, ChevronRight, ArrowRight, Maximize2, Download } from 'lucide-react';
+import { Code2, Activity, ChevronDown, ChevronRight, ArrowRight, Maximize2, Download, RefreshCw, Clock } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { MermaidDiagram } from '@/components/MermaidDiagram';
 
 import { ApiTraceEntry } from '@/types/api-trace';
@@ -17,7 +24,7 @@ import { ApiTraceEntry } from '@/types/api-trace';
 import { useApiTrace } from '@/contexts/api-trace-context';
 
 export function DeveloperPanel() {
-  const { entries } = useApiTrace();
+  const { entries, currentSessionId, previousSessions, startNewSession, loadSession } = useApiTrace();
   
   return (
     <Card className="border-border bg-card h-full">
@@ -45,7 +52,13 @@ export function DeveloperPanel() {
             <DeveloperNotes />
           </TabsContent>
           <TabsContent value="trace" className="h-full m-0 overflow-y-auto">
-            <ApiTraceList entries={entries} />
+            <ApiTraceList 
+              entries={entries} 
+              currentSessionId={currentSessionId}
+              previousSessions={previousSessions}
+              onNewSession={startNewSession}
+              onLoadSession={loadSession}
+            />
           </TabsContent>
         </CardContent>
       </Tabs>
@@ -187,9 +200,43 @@ function DeveloperNotes() {
   );
 }
 
-function ApiTraceList({ entries }: { entries: ApiTraceEntry[] }) {
+interface ApiTraceListProps {
+  entries: ApiTraceEntry[];
+  currentSessionId: string;
+  previousSessions: Array<{ sessionId: string; createdAt: string; entryCount: number }>;
+  onNewSession: () => void;
+  onLoadSession: (sessionId: string) => void;
+}
+
+function ApiTraceList({ entries, currentSessionId, previousSessions, onNewSession, onLoadSession }: ApiTraceListProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const { exportTrace } = useApiTrace();
+
+  const formatSessionDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  // Ensure current session is in the list
+  const sessionsToShow = [...previousSessions];
+  const currentSessionInList = sessionsToShow.find(s => s.sessionId === currentSessionId);
+  if (!currentSessionInList && currentSessionId) {
+    sessionsToShow.unshift({
+      sessionId: currentSessionId,
+      createdAt: new Date().toISOString(),
+      entryCount: entries.length,
+    });
+  }
 
   const toggleExpand = (id: string) => {
     setExpanded(prev => {
@@ -213,7 +260,42 @@ function ApiTraceList({ entries }: { entries: ApiTraceEntry[] }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-end mb-2">
+      <div className="flex items-center justify-between mb-2 gap-2">
+        <div className="flex items-center gap-2 flex-1">
+          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+          <Select value={currentSessionId} onValueChange={onLoadSession}>
+            <SelectTrigger className="h-7 text-xs flex-1 max-w-[200px]">
+              <SelectValue placeholder="Select session" />
+            </SelectTrigger>
+            <SelectContent>
+              {sessionsToShow.length === 0 ? (
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  No sessions available
+                </div>
+              ) : (
+                sessionsToShow.map(session => (
+                  <SelectItem key={session.sessionId} value={session.sessionId}>
+                    <div className="flex items-center justify-between gap-2 w-full">
+                      <span className="text-xs">{formatSessionDate(session.createdAt)}</span>
+                      <Badge variant="secondary" className="h-4 text-[10px] px-1">
+                        {session.entryCount}
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onNewSession}
+            className="h-7 px-2 text-xs"
+            title="Start new session"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+          </Button>
+        </div>
         <Button
           variant="outline"
           size="sm"
