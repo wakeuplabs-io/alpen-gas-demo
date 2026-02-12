@@ -28,10 +28,19 @@ const app = createApp();
  * // Example of CORS_ORIGINS in .env
  * CORS_ORIGINS=http://localhost:3000,https://example.com
  */
+const allowedOrigins = env.corsOrigins
+  .split(",")
+  .map((origin: string) => origin.trim())
+  .map((origin: string) => origin.replace(/\/+$/, "")) // Remove trailing slashes
+  .filter((origin: string) => origin.length > 0);
+
+console.log("🌐 CORS Configuration:");
+console.log(`   Allowed origins: ${allowedOrigins.join(", ")}`);
+
 app.use(
   "/*",
   cors({
-    origin: env.corsOrigins.split(",").map((origin) => origin.trim()),
+    origin: allowedOrigins,
     credentials: true,
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowHeaders: ["Content-Type", "Authorization"],
