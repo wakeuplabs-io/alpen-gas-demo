@@ -10,8 +10,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ApiTraceEntry } from '@/types/api-trace';
 import { MermaidDiagram } from '@/components/MermaidDiagram';
+
+import { ApiTraceEntry } from '@/types/api-trace';
+
 import { useApiTrace } from '@/contexts/api-trace-context';
 
 export function DeveloperPanel() {
