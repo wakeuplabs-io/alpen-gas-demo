@@ -17,11 +17,18 @@ export function useWallet() {
 
   useEffect(() => {
     if (address) {
-      PROVIDER.getBalance(address).then((bal) => {
-        setBalance(bal.toString());
-      });
+      PROVIDER.getBalance(address)
+        .then((bal) => {
+          setBalance(bal.toString());
+        })
+        .catch((error) => {
+          console.error('Error fetching balance:', error);
+          setBalance('0');
+        });
+    } else {
+      setBalance('0');
     }
-  }, [operationalAddress]);
+  }, [address]);
 
   return {
     status: getWalletStatus(ready, authenticated, address, wallets?.[0]?.chainId),

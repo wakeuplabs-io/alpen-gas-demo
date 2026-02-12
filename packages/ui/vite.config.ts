@@ -14,7 +14,7 @@ export default defineConfig({
     dedupe: ["react", "react-dom"],
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "@privy-io/react-auth"],
+    include: ["react", "react-dom", "@privy-io/react-auth", "ethers"],
     exclude: [],
     esbuildOptions: {
       target: "es2020",
@@ -35,12 +35,20 @@ export default defineConfig({
           if (id.includes('@privy-io/react-auth')) {
             return 'privy';
           }
+          // Keep ethers in its own chunk to avoid minification issues with private methods
+          if (id.includes('node_modules/ethers')) {
+            return 'ethers';
+          }
           // Keep React and React DOM together
           if (id.includes('react') || id.includes('react-dom')) {
             return 'react-vendor';
           }
         },
+        // Preserve class names and method names for ethers
+        format: 'es',
       },
+      // Externalize ethers to avoid minification issues (alternative approach)
+      // external: (id) => id.includes('ethers') ? false : undefined,
     },
   },
   server: {
