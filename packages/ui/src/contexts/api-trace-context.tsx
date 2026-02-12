@@ -1,17 +1,55 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { ApiTraceEntry } from '@/types/api-trace';
+import {
+  getOrCreateCurrentSession,
+  saveTracesToSession,
+  loadTracesFromSession,
+  getAllSessions,
+  createNewSession,
+  setCurrentSession,
+} from '@/lib/api-trace-storage';
 
 interface ApiTraceContextValue {
   entries: ApiTraceEntry[];
+  currentSessionId: string;
+  previousSessions: Array<{ sessionId: string; createdAt: string; entryCount: number }>;
   addTrace: (entry: Omit<ApiTraceEntry, 'id' | 'timestamp'>) => void;
   clearTraces: () => void;
   exportTrace: () => void;
+  startNewSession: () => void;
+  loadSession: (sessionId: string) => void;
 }
 
 const ApiTraceContext = createContext<ApiTraceContextValue | undefined>(undefined);
 
 export function ApiTraceProvider({ children }: { children: ReactNode }) {
   const [entries, setEntries] = useState<ApiTraceEntry[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string>('');
+  const [previousSessions, setPreviousSessions] = useState<Array<{ sessionId: string; createdAt: string; entryCount: number }>>([]);
+
+  useEffect(() => {
+    const sessionId = getOrCreateCurrentSession();
+    setCurrentSessionId(sessionId);
+    
+    // Load traces from current session
+    const loadedTraces = loadTracesFromSession(sessionId);
+    setEntries(loadedTraces);
+    
+    // Load all sessions for history
+    const sessions = getAllSessions();
+    setPreviousSessions(sessions);
+  }, []);
+
+  // Save traces to localStorage whenever entries change
+  useEffect(() => {
+    if (currentSessionId) {
+      saveTracesToSession(currentSessionId, entries);
+      
+      // Update sessions list
+      const sessions = getAllSessions();
+      setPreviousSessions(sessions);
+    }
+  }, [entries, currentSessionId]);
 
   const addTrace = useCallback((entry: Omit<ApiTraceEntry, 'id' | 'timestamp'>) => {
     setEntries(prev => [
@@ -28,6 +66,40 @@ export function ApiTraceProvider({ children }: { children: ReactNode }) {
     setEntries([]);
   }, []);
 
+  const startNewSession = useCallback(() => {
+    // Save current session traces before creating new session
+    if (currentSessionId) {
+      saveTracesToSession(currentSessionId, entries);
+    }
+    
+    // Create new session
+    const newSessionId = createNewSession();
+    setCurrentSessionId(newSessionId);
+    setEntries([]);
+    
+    // Update sessions list
+    const sessions = getAllSessions();
+    setPreviousSessions(sessions);
+  }, [currentSessionId, entries]);
+
+  const loadSession = useCallback((sessionId: string) => {
+    // Save current session traces before switching
+    if (currentSessionId && currentSessionId !== sessionId) {
+      saveTracesToSession(currentSessionId, entries);
+    }
+    
+    const loadedTraces = loadTracesFromSession(sessionId);
+    setCurrentSessionId(sessionId);
+    setEntries(loadedTraces);
+    
+    // Update current session in storage
+    setCurrentSession(sessionId);
+    
+    // Update sessions list
+    const sessions = getAllSessions();
+    setPreviousSessions(sessions);
+  }, [currentSessionId, entries]);
+
   const exportTrace = useCallback(() => {
     if (entries.length === 0) {
       return;
@@ -35,6 +107,7 @@ export function ApiTraceProvider({ children }: { children: ReactNode }) {
 
     const exportData = {
       exportedAt: new Date().toISOString(),
+      sessionId: currentSessionId,
       totalEntries: entries.length,
       entries: entries.map(entry => ({
         ...entry,
@@ -52,10 +125,21 @@ export function ApiTraceProvider({ children }: { children: ReactNode }) {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, [entries]);
+  }, [entries, currentSessionId]);
 
   return (
-    <ApiTraceContext.Provider value={{ entries, addTrace, clearTraces, exportTrace }}>
+    <ApiTraceContext.Provider
+      value={{
+        entries,
+        currentSessionId,
+        previousSessions,
+        addTrace,
+        clearTraces,
+        exportTrace,
+        startNewSession,
+        loadSession,
+      }}
+    >
       {children}
     </ApiTraceContext.Provider>
   );
