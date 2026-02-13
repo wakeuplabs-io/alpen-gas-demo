@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Code2, Activity, ChevronDown, ChevronRight, ArrowRight, Maximize2, Download, RefreshCw, Clock } from 'lucide-react';
+import { Code2, Activity, ChevronDown, ChevronRight, ArrowRight, Maximize2, Download, RefreshCw, Clock, AlertTriangle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -210,6 +212,7 @@ interface ApiTraceListProps {
 
 function ApiTraceList({ entries, currentSessionId, previousSessions, onNewSession, onLoadSession }: ApiTraceListProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { exportTrace } = useApiTrace();
 
   const formatSessionDate = (dateString: string) => {
@@ -250,7 +253,8 @@ function ApiTraceList({ entries, currentSessionId, previousSessions, onNewSessio
     });
   };
 
-  if (entries.length === 0) {
+  // Only show empty message if no entries and no previous sessions
+  if (entries.length === 0 && previousSessions.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground text-sm">
         No API calls yet. Connect your wallet to see the trace.
@@ -289,7 +293,7 @@ function ApiTraceList({ entries, currentSessionId, previousSessions, onNewSessio
           <Button
             variant="outline"
             size="sm"
-            onClick={onNewSession}
+            onClick={() => setShowConfirmModal(true)}
             className="h-7 px-2 text-xs"
             title="Start new session"
           >
@@ -370,6 +374,57 @@ function ApiTraceList({ entries, currentSessionId, previousSessions, onNewSessio
           )}
         </div>
       ))}
+      
+      {/* New Session Confirmation Modal */}
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-warning" />
+              Start New Session?
+            </DialogTitle>
+            <DialogDescription>
+              This will create a new API trace session. The current session will be saved and you can access it later from the session history.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {entries.length > 0 && (
+              <div className="bg-muted/50 rounded-lg p-3 border border-border">
+                <div className="text-xs text-muted-foreground mb-1">Current Session</div>
+                <div className="text-sm">
+                  <span className="text-muted-foreground">Entries:</span>{' '}
+                  <span className="font-medium">{entries.length}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-primary/10 border border-primary/30 rounded-lg p-3">
+              <p className="text-xs text-muted-foreground">
+                <strong className="text-primary">Note:</strong> Your current session will be automatically saved before starting a new one.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => {
+                onNewSession();
+                setShowConfirmModal(false);
+              }}
+            >
+              Start New Session
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
