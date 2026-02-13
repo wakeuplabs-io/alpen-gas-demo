@@ -72,6 +72,7 @@ packages/contracts/
 ├── script/
 │   ├── Counter.s.sol            # Deployment script
 │   ├── BatchCallAndSponsor.s.sol # Deployment script
+│   ├── AllowContract.s.sol     # Add contract to allow list
 │   └── verify.sh                # Verification script
 ├── foundry.toml                 # Foundry configuration
 └── lib/                         # Dependencies (OpenZeppelin, etc.)
@@ -107,16 +108,56 @@ forge test --match-path test/Counter.t.sol
 
 ## Deployment
 
-### Deploy to Testnet
+### Deploy BatchCallAndSponsor and SponsorWhitelist
 
 1. Set up your RPC URL and private key:
 
 ```bash
-export RPC_URL=https://rpc.alpen.dev
+export RPC_URL=https://rpc.testnet.alpenlabs.io
 export PRIVATE_KEY=your_private_key_here
 ```
 
-2. Deploy the contract:
+2. Deploy both contracts (SponsorWhitelist and BatchCallAndSponsor):
+
+```bash
+forge script script/BatchCallAndSponsor.s.sol:BatchCallAndSponsorScript \
+  --rpc-url $RPC_URL \
+  --private-key $PRIVATE_KEY \
+  --broadcast
+```
+
+The script will output the deployed addresses:
+- `SponsorWhitelist deployed at: <address>`
+- `BatchCallAndSponsor deployed at: <address>`
+
+3. Save the deployed addresses as environment variables:
+
+```bash
+export SPONSOR_WHITELIST=<sponsor_whitelist_address>
+export BATCH_CALL=<batch_call_address>
+```
+
+4. Verify the contracts on Blockscout:
+
+```bash
+# Verify both contracts
+./script/verify.sh both
+
+# Or verify individually
+./script/verify.sh sponsor  # Verify SponsorWhitelist only
+./script/verify.sh batch    # Verify BatchCallAndSponsor only
+```
+
+### Deploy Counter Contract
+
+1. Set up your RPC URL and private key:
+
+```bash
+export RPC_URL=https://rpc.testnet.alpenlabs.io
+export PRIVATE_KEY=your_private_key_here
+```
+
+2. Deploy the Counter contract:
 
 ```bash
 forge script script/Counter.s.sol:CounterScript \
@@ -125,10 +166,22 @@ forge script script/Counter.s.sol:CounterScript \
   --broadcast
 ```
 
-3. Verify the contract:
+3. Verify the Counter contract:
 
 ```bash
-./script/verify.sh <deployed_address> Counter ""
+export COUNTER=<counter_address>
+./script/verify.sh counter
+```
+
+4. Add Counter to the SponsorWhitelist allow list:
+
+```bash
+export SPONSOR_WHITELIST=<sponsor_whitelist_address>
+export COUNTER=<counter_address>
+forge script script/AllowContract.s.sol:AllowContractScript \
+  --rpc-url $RPC_URL \
+  --private-key $PRIVATE_KEY \
+  --broadcast
 ```
 
 ### Missing Dependencies

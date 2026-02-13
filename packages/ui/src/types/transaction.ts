@@ -1,6 +1,7 @@
 export enum TransactionStatus {
   IDLE = 'idle',
   PREPARING = 'preparing',
+  DELEGATING = 'delegating',
   AWAITING_SIGNATURE = 'awaiting-signature',
   PENDING = 'pending',
   SUCCESS = 'success',
@@ -15,7 +16,7 @@ export interface TransactionState {
 }
 
 export interface TransactionActions {
-  startTransaction: () => void;
+  startTransaction: () => Promise<void>;
   signTransaction: () => Promise<string>;
   transactTransaction: (signature: string) => Promise<void>;
   resetTransaction: () => void;

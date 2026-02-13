@@ -19,7 +19,7 @@ interface CounterCardProps {
   wallet: Wallet;
   sponsorship: SponsorshipState;
   transaction: TransactionState;
-  onIncrement: () => void;
+  onIncrement: () => Promise<void>;
 }
 
 export function CounterCard({

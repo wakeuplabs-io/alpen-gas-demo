@@ -2,6 +2,7 @@ import { keccak256, solidityPacked } from "ethers";
 import { useSign7702Authorization, useSignMessage } from "@privy-io/react-auth";
 
 import { CHAIN_ID, PROVIDER } from "@/lib/network";
+import { isDelegatedToImplementation, getAccountCodeWithRetry, isDelegated } from "@/lib/delegation";
 
 import { BATCH_CALL_AND_SPONSOR_ADDRESS } from "@/infra/contracts";
 import { getContractNonce } from "@/infra/contracts/delegated";
@@ -29,9 +30,9 @@ export function useDelegate() {
       throw new Error("User address not found");
     }
 
-    const accountCode = await PROVIDER.getCode(user);
-    const currentImplementation = "0x" + accountCode.split("0xef0100")[1];
-    if (currentImplementation.toLowerCase() === implementation.toLowerCase()){
+    // Check if already delegated to the correct implementation (with retries)
+    const isAlreadyDelegated = await isDelegatedToImplementation(user, implementation);
+    if (isAlreadyDelegated) {
       return;
     }
 
@@ -58,15 +59,10 @@ export function useDelegate() {
       throw new Error("Please connect your wallet first");
     }
 
-    const accountCode = await PROVIDER.getCode(user);
-    if (!accountCode || accountCode === "0x" || accountCode === "0x0" || accountCode.length <= 2) {
+    // Check if account is delegated (with retries)
+    const accountCode = await getAccountCodeWithRetry(user);
+    if (!accountCode || !isDelegated(accountCode)) {
       throw new Error("Account not delegated. Please wait for delegation to be confirmed.");
-    }
-
-    // Check if code starts with EIP-7702 magic bytes (0xef0100)
-    const magicBytes = accountCode.slice(0, 10);
-    if (!magicBytes.startsWith('0xef0100')) {
-      throw new Error("Invalid delegation format. Account code does not match EIP-7702 format.");
     }
 
     const contractNonce = await getContractNonce(user);

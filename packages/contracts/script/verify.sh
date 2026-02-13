@@ -9,9 +9,11 @@ CHAIN_ID=8150
 RPC_URL="https://rpc.testnet.alpenlabs.io"
 EXPLORER_URL="https://explorer.testnet.alpenlabs.io/api"
 
-SPONSOR_WHITELIST=
-BATCH_CALL=
-COUNTER=
+# Use exported environment variables
+# These should be set before running the script:
+# export SPONSOR_WHITELIST=<address>
+# export BATCH_CALL=<address>
+# export COUNTER=<address>
 
 if [ -z "$ETHERSCAN_API_KEY" ]; then
     export ETHERSCAN_API_KEY="blockscout"
@@ -28,7 +30,7 @@ verify_sponsor() {
         --verifier-url $EXPLORER_URL \
         $SPONSOR_WHITELIST \
         SponsorWhitelist \
-        --constructor-args $(cast abi-encode "constructor(uint256)" 10)
+        --constructor-args $(cast abi-encode "constructor(uint256,uint256)" 10 100)
     
     echo "✅ SponsorWhitelist verified on Blockscout"
     echo "   View on: https://explorer.testnet.alpenlabs.io/address/$SPONSOR_WHITELIST"

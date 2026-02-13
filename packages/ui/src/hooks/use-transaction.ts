@@ -1,29 +1,48 @@
 import { EXPLORER_URL } from "@/lib/network";
 import { TransactionActions, TransactionState, TransactionStatus } from "@/types/transaction";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDelegate } from "./use-delegate";
 import { env } from "@/config/env";
 import { IncrementCall } from "@/infra/counter-serivce";
 import { useQueryClient } from "@tanstack/react-query";
+import { isDelegatedToImplementation } from "@/lib/delegation";
+import { useWallet } from "./use-wallet";
 
 export function useTransaction() {
   const [status, setStatus] = useState<TransactionStatus>(TransactionStatus.IDLE);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const { operationalAddress: user } = useWallet();
   const queryClient = useQueryClient();
   const { setupDelegate, signTransaction: signTransactionDelegate, transactDelegate } = useDelegate();
 
+  useEffect(() => {
 
-  const startTransaction = () => {
+    const checkDelegation = async () => {
+      if (!user) {
+        return;
+      }
+
+      if (status === TransactionStatus.DELEGATING) {
+        const isDelegated = await isDelegatedToImplementation(user, env.batchCallAndSponsorAddress);
+        if (isDelegated) {
+          setStatus(TransactionStatus.AWAITING_SIGNATURE);
+        }
+      }
+    }
+
+    checkDelegation();
+  }, [status]);
+
+  const startTransaction = async () => {
     try {
       setStatus(TransactionStatus.PREPARING);
   
-      setupDelegate({ implementation: env.batchCallAndSponsorAddress });
+      await setupDelegate({ implementation: env.batchCallAndSponsorAddress });
+      setStatus(TransactionStatus.DELEGATING);
     } catch (error) {
       setStatus(TransactionStatus.FAILED);
       console.error(error);
       throw error;
-    } finally {
-      setStatus(TransactionStatus.AWAITING_SIGNATURE);
     }
   }
 
