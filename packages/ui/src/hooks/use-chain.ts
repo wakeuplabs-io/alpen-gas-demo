@@ -15,6 +15,8 @@ export function useChain() {
     if (walletAccount && walletAccount.chainId) {
       if (parseChainId(walletAccount.chainId) !== CHAIN_ID) {
         setIsWrongNetwork(true);
+      } else {
+        setIsWrongNetwork(false);
       }
     }
   }, [walletAccount?.chainId]);
