@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
-import { useLogout, useWallets } from '@privy-io/react-auth';
+import { useLogout } from '@privy-io/react-auth';
 
 import { TopBar } from '@/components/TopBar';
 import { CounterCard } from '@/components/CounterCard';
@@ -19,7 +18,7 @@ import { useTransaction } from '@/hooks/use-transaction';
 import { TransactionStatus } from '@/types/transaction';
 import { Address } from '@/types/wallet';
 
-import { CHAIN_ID } from '@/lib/network';
+import { useChain } from '@/hooks/use-chain';
 
 const Index = () => {
   // States
@@ -27,32 +26,14 @@ const Index = () => {
   const [showHelp, setShowHelp] = useState(false);
 
   // Hooks
+  const { handleSwitchNetwork, isWrongNetwork } = useChain();
   const { logout } = useLogout();
-  const { wallets } = useWallets();
   const wallet = useWallet();
   const counter = useCounter();
   const { state: transaction, actions: transactionActions } = useTransaction();
   const { sponsorship, checkEligibility } = useSponsorship();
   const { lastEvent } = useLastEvent();
   
-
-  const handleSwitchNetwork = async () => {
-    try {
-      // Privy handles chain switching automatically for embedded wallets
-      // For external wallets, we can try to switch
-      if (wallets && wallets.length > 0) {
-        // Try to switch chain if supported
-        await wallets[0].switchChain(CHAIN_ID);
-        toast.success('Network switched successfully', {
-          description: 'You are now connected to Alpen Testnet.',
-        });
-      }
-    } catch (error) {
-      toast.error('Failed to switch network', {
-        description: error instanceof Error ? error.message : 'Please switch the network manually in your wallet.',
-      });
-    }
-  };
 
   const handleSignTransaction = async () => {
     const signature = await transactionActions.signTransaction();
@@ -82,6 +63,7 @@ const Index = () => {
             />
 
             <GasStatusCard
+              isWrongNetwork={isWrongNetwork}
               wallet={wallet}
               sponsorship={sponsorship}
               onRequestSponsorship={checkEligibility}
