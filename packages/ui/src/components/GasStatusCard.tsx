@@ -9,6 +9,7 @@ import { formatBalance } from "@/lib/balance";
 import { CHAIN } from "@/lib/network";
 
 interface GasStatusCardProps {
+  isWrongNetwork: boolean;
   wallet: Wallet;
   sponsorship: SponsorshipState;
   onRequestSponsorship: () => void;
@@ -17,6 +18,7 @@ interface GasStatusCardProps {
 }
 
 export function GasStatusCard({
+  isWrongNetwork,
   wallet,
   sponsorship,
   onRequestSponsorship,
@@ -24,7 +26,6 @@ export function GasStatusCard({
   onSwitchNetwork,
 }: GasStatusCardProps) {
   const isConnected = wallet.status === WalletStatus.CONNECTED;
-  const isWrongNetwork = wallet.status === WalletStatus.WRONG_NETWORK;
 
   if (!isConnected && !isWrongNetwork) {
     return (

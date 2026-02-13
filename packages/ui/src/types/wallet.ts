@@ -1,3 +1,5 @@
+import { ConnectedWallet } from "@privy-io/react-auth";
+
 export enum WalletStatus {
   DISCONNECTED = 'disconnected',
   CONNECTING = 'connecting',
@@ -10,6 +12,7 @@ export interface Wallet {
   address: Address | null;
   operationalAddress: Address | null;
   balance: string;
+  walletAccount: ConnectedWallet | null;
 }
 
 export type Address = `0x${string}`;

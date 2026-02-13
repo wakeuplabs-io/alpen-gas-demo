@@ -30,10 +30,13 @@ export function useWallet() {
     }
   }, [address]);
 
+  const walletAccount = wallets?.find(w => w.address.toLowerCase() === address?.toLowerCase());
+
   return {
     status: getWalletStatus(ready, authenticated, address, wallets?.[0]?.chainId),
     address,
     operationalAddress,
     balance,
+    walletAccount: walletAccount || null,
   } satisfies Wallet;
 } 
