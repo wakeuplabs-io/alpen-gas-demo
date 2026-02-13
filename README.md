@@ -41,3 +41,13 @@ Each package has its own README with setup instructions:
 - **[`packages/ui/README.md`](./packages/ui/README.md)** - Frontend application setup and development
 - **[`packages/contracts/README.md`](./packages/contracts/README.md)** - Smart contracts setup and development
 
+## Technical Documentation
+
+For detailed architecture, design decisions, and implementation details:
+
+- **[`packages/documentation/architecture-and-design.md`](./packages/documentation/architecture-and-design.md)** - Complete technical documentation including:
+  - System architecture and component interactions
+  - EIP-7702 delegation flow with sequence diagrams
+  - Smart contracts design and responsibilities
+  - Security considerations and best practices
+  - Wallet integration details and alternatives
