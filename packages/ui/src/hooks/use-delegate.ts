@@ -103,5 +103,6 @@ export function useDelegate() {
     return result;
   }
 
-  return { setupDelegate, signTransaction,  transactDelegate };
+
+  return { setupDelegate, signTransaction, transactDelegate };
 }

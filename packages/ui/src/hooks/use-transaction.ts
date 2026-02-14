@@ -3,15 +3,17 @@ import { TransactionActions, TransactionState, TransactionStatus } from "@/types
 import { useEffect, useState } from "react";
 import { useDelegate } from "./use-delegate";
 import { env } from "@/config/env";
-import { IncrementCall } from "@/infra/counter-serivce";
+import { CounterService, IncrementCall } from "@/infra/counter-serivce";
 import { useQueryClient } from "@tanstack/react-query";
 import { isDelegatedToImplementation } from "@/lib/delegation";
 import { useWallet } from "./use-wallet";
 
+const counterService = new CounterService();
+
 export function useTransaction() {
   const [status, setStatus] = useState<TransactionStatus>(TransactionStatus.IDLE);
   const [txHash, setTxHash] = useState<string | null>(null);
-  const { operationalAddress: user } = useWallet();
+  const { operationalAddress: user, walletAccount } = useWallet();
   const queryClient = useQueryClient();
   const { setupDelegate, signTransaction: signTransactionDelegate, transactDelegate } = useDelegate();
 
@@ -93,6 +95,27 @@ export function useTransaction() {
     setTxHash(null);
   }
 
+  const executeEoaTransaction = async () => {
+    if (!walletAccount) {
+      setStatus(TransactionStatus.FAILED);
+      return;
+    }
+
+    try {
+      setStatus(TransactionStatus.PENDING);
+
+      const tx = await counterService.increment(walletAccount);
+      setTxHash(tx);
+      setStatus(TransactionStatus.SUCCESS);
+      await handleRefreshTransaction();
+
+    } catch (error) {
+      setStatus(TransactionStatus.FAILED);
+      console.error(error);
+      throw error;
+    }
+  }
+
   return {
     state: {
       status,
@@ -104,6 +127,7 @@ export function useTransaction() {
       signTransaction,
       transactTransaction,
       resetTransaction,
+      executeEoaTransaction,
     } satisfies TransactionActions,
   };
 }
