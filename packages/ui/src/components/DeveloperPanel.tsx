@@ -84,8 +84,7 @@ sequenceDiagram
     Frontend->>AlpenChain: getBalance(user)
     AlpenChain-->>Frontend: 0 BTC
 
-    Frontend->>Privy: checkEligibility()
-    Privy->>Backend: checkEligibility(user)
+    Frontend->>Backend: checkEligibility(user)
     Backend->>Whitelist: check
     Whitelist-->>Backend: eligible
     Backend-->>Privy: eligible

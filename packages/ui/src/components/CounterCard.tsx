@@ -43,10 +43,11 @@ export function CounterCard({
   }, [count, prevCount]);
 
   const isConnected = wallet.status === 'connected';
+  const hasBalance = BigInt(wallet.balance) > 0n;
   const canIncrement = 
     isConnected && 
-    sponsorship.status === SponsorshipStatus.ELIGIBLE && 
-    transaction.status === TransactionStatus.IDLE;
+    transaction.status === TransactionStatus.IDLE &&
+    (sponsorship.status === SponsorshipStatus.ELIGIBLE || hasBalance);
 
   const getIncrementButtonContent = () => {
     if (transaction.status === 'preparing') {

@@ -17,6 +17,7 @@ import { useTransaction } from '@/hooks/use-transaction';
 
 import { TransactionStatus } from '@/types/transaction';
 import { Address } from '@/types/wallet';
+import { SponsorshipStatus } from '@/types/sponsorship';
 
 import { useChain } from '@/hooks/use-chain';
 
@@ -40,6 +41,15 @@ const Index = () => {
     await transactionActions.transactTransaction(signature);
   }
 
+  const handleIncrement = async () => {
+    const isSponsored = sponsorship.status === SponsorshipStatus.ELIGIBLE;
+    if (!isSponsored) {
+      await transactionActions.executeEoaTransaction();
+    } else {
+      await transactionActions.startTransaction();
+    }
+  }
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -59,7 +69,7 @@ const Index = () => {
               wallet={wallet}
               sponsorship={sponsorship}
               transaction={transaction}
-              onIncrement={transactionActions.startTransaction}
+              onIncrement={handleIncrement}
             />
 
             <GasStatusCard

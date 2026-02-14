@@ -20,4 +20,5 @@ export interface TransactionActions {
   signTransaction: () => Promise<string>;
   transactTransaction: (signature: string) => Promise<void>;
   resetTransaction: () => void;
+  executeEoaTransaction: () => Promise<void>;
 }
