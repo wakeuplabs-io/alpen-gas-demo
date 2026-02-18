@@ -24,8 +24,8 @@ contract AllowContractScript is Script {
     function setUp() public {}
 
     function run() public {
-        address sponsorWhitelistAddress = vm.envAddress("SPONSOR_WHITELIST");
-        address counterAddress = vm.envAddress("COUNTER");
+        address sponsorWhitelistAddress = vm.envAddress("SPONSOR_WHITELIST_ADDRESS");
+        address counterAddress = vm.envAddress("COUNTER_ADDRESS");
 
         SponsorWhitelist sponsorWhitelist = SponsorWhitelist(sponsorWhitelistAddress);
 

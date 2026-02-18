@@ -108,6 +108,43 @@ forge test --match-path test/Counter.t.sol
 
 ## Deployment
 
+
+### Deploy Counter Contract
+
+1. Set up your RPC URL and private key:
+
+```bash
+export RPC_URL=https://rpc.testnet.alpenlabs.io
+export PRIVATE_KEY=your_private_key_here
+```
+
+2. Deploy the Counter contract:
+
+```bash
+forge script script/Counter.s.sol:CounterScript \
+  --rpc-url $RPC_URL \
+  --private-key $PRIVATE_KEY \
+  --broadcast
+```
+
+3. Verify the Counter contract:
+
+```bash
+export COUNTER_ADDRESS=<counter_address>
+./script/verify.sh counter
+```
+
+4. Add Counter to the SponsorWhitelist allow list:
+
+```bash
+export SPONSOR_WHITELIST_ADDRESS=<sponsor_whitelist_address>
+export COUNTER_ADDRESS=<counter_address>
+forge script script/AllowContract.s.sol:AllowContractScript \
+  --rpc-url $RPC_URL \
+  --private-key $PRIVATE_KEY \
+  --broadcast
+```
+
 ### Deploy BatchCallAndSponsor and SponsorWhitelist
 
 1. Set up your RPC URL and private key:
@@ -133,8 +170,8 @@ The script will output the deployed addresses:
 3. Save the deployed addresses as environment variables:
 
 ```bash
-export SPONSOR_WHITELIST=<sponsor_whitelist_address>
-export BATCH_CALL=<batch_call_address>
+export SPONSOR_WHITELIST_ADDRESS=<sponsor_whitelist_address>
+export BATCH_CALL_ADDRESS=<batch_call_address>
 ```
 
 4. Verify the contracts on Blockscout:
@@ -148,41 +185,25 @@ export BATCH_CALL=<batch_call_address>
 ./script/verify.sh batch    # Verify BatchCallAndSponsor only
 ```
 
-### Deploy Counter Contract
-
-1. Set up your RPC URL and private key:
+5. **Test contract configuration (dry-run)** - Verify contracts work before configuring backend:
 
 ```bash
-export RPC_URL=https://rpc.testnet.alpenlabs.io
-export PRIVATE_KEY=your_private_key_here
+# Make sure you have the contract addresses set
+export SPONSOR_WHITELIST_ADDRESS=<sponsor_whitelist_address>
+export BATCH_CALL_AND_SPONSOR_ADDRESS=<batch_call_address>
+export COUNTER_ADDRESS=<counter_address>
+
+# Run dry-run tests
+./script/test-contracts.sh
 ```
 
-2. Deploy the Counter contract:
+This script uses `cast call` to simulate contract interactions without sending transactions. It verifies:
+- Counter contract is readable
+- Counter is properly whitelisted
+- Whitelist configuration is correct
+- Contracts are properly deployed
 
-```bash
-forge script script/Counter.s.sol:CounterScript \
-  --rpc-url $RPC_URL \
-  --private-key $PRIVATE_KEY \
-  --broadcast
-```
-
-3. Verify the Counter contract:
-
-```bash
-export COUNTER=<counter_address>
-./script/verify.sh counter
-```
-
-4. Add Counter to the SponsorWhitelist allow list:
-
-```bash
-export SPONSOR_WHITELIST=<sponsor_whitelist_address>
-export COUNTER=<counter_address>
-forge script script/AllowContract.s.sol:AllowContractScript \
-  --rpc-url $RPC_URL \
-  --private-key $PRIVATE_KEY \
-  --broadcast
-```
+If all tests pass, you can proceed to configure the backend API.
 
 ### Missing Dependencies
 

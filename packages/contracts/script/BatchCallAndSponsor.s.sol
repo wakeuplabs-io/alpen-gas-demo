@@ -22,7 +22,7 @@ contract BatchCallAndSponsorScript is Script {
         batchCallAndSponsor = new BatchCallAndSponsor(address(sponsorWhitelist));
         console.log("BatchCallAndSponsor deployed at:", address(batchCallAndSponsor));
 
-        address counterAddress = 0x95D6d9ba13cF8E3caE58d912fb846bAFB90DfA08;
+        address counterAddress = vm.envAddress("COUNTER_ADDRESS");
         sponsorWhitelist.allowContract(counterAddress);
         console.log("Counter whitelisted at:", counterAddress);
 
