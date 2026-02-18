@@ -448,23 +448,25 @@ bun run test:coverage
 ### Frontend (.env)
 
 ```env
-VITE_API_URL=http://localhost:3000/api
-VITE_ALPEN_RPC_URL=https://rpc.alpen.dev
-VITE_COUNTER_CONTRACT=0x1588967e1635F4aD686cB67EbfDCc1D0A89191Ca
-VITE_CHAIN_ID=8150
-VITE_EXPLORER_URL=https://explorer.testnet.alpenlabs.io
+VITE_API_URL=http://localhost:9999
+VITE_PRIVY_APP_ID=your_privy_app_id
+VITE_PRIVY_CLIENT_ID=your_privy_client_id
+VITE_COUNTER_CONTRACT_ADDRESS=0x
+VITE_BATCH_CALL_AND_SPONSOR_ADDRESS=0x
+VITE_SPONSOR_WHITELIST_ADDRESS=0x
 ```
 
 ### Backend (.env)
 
 ```env
-PORT=3000
-CORS_ORIGINS=http://localhost:5173,https://your-domain.com
-ALPEN_RPC_URL=https://rpc.alpen.dev
-COUNTER_CONTRACT=0x1588967e1635F4aD686cB67EbfDCc1D0A89191Ca
-PAYMASTER_API_URL=https://sponsor.alpen.dev/api
-PAYMASTER_API_KEY=your-api-key
-CHAIN_ID=8150
+NODE_ENV=development
+PORT=9999
+LOG_LEVEL=debug
+CORS_ORIGINS=http://localhost:3000
+RPC_URL=https://rpc.testnet.alpenlabs.io
+SPONSOR_PRIVATE_KEY=0x
+BATCH_CALL_AND_SPONSOR_ADDRESS=0x
+SPONSOR_WHITELIST_ADDRESS=0x
 ```
 
 ---

@@ -134,17 +134,6 @@ export COUNTER_ADDRESS=<counter_address>
 ./script/verify.sh counter
 ```
 
-4. Add Counter to the SponsorWhitelist allow list:
-
-```bash
-export SPONSOR_WHITELIST_ADDRESS=<sponsor_whitelist_address>
-export COUNTER_ADDRESS=<counter_address>
-forge script script/AllowContract.s.sol:AllowContractScript \
-  --rpc-url $RPC_URL \
-  --private-key $PRIVATE_KEY \
-  --broadcast
-```
-
 ### Deploy BatchCallAndSponsor and SponsorWhitelist
 
 1. Set up your RPC URL and private key:
@@ -171,7 +160,7 @@ The script will output the deployed addresses:
 
 ```bash
 export SPONSOR_WHITELIST_ADDRESS=<sponsor_whitelist_address>
-export BATCH_CALL_ADDRESS=<batch_call_address>
+export BATCH_CALL_AND_SPONSOR_ADDRESS=<batch_call_address>
 ```
 
 4. Verify the contracts on Blockscout:
@@ -205,6 +194,19 @@ This script uses `cast call` to simulate contract interactions without sending t
 
 If all tests pass, you can proceed to configure the backend API.
 
+### Other scripts
+
+1. Add Counter to the SponsorWhitelist allow list:
+
+```bash
+export SPONSOR_WHITELIST_ADDRESS=<sponsor_whitelist_address>
+export COUNTER_ADDRESS=<counter_address>
+forge script script/AllowContract.s.sol:AllowContractScript \
+  --rpc-url $RPC_URL \
+  --private-key $PRIVATE_KEY \
+  --broadcast
+```
+
 ### Missing Dependencies
 
 If tests fail due to missing dependencies:
@@ -212,3 +214,9 @@ If tests fail due to missing dependencies:
 ```bash
 forge install OpenZeppelin/openzeppelin-contracts --no-commit
 ```
+
+## Next Steps
+
+Once you have deployed and verified your contracts, proceed to configure the backend API:
+
+👉 **[API Package README](../api/README.md)**

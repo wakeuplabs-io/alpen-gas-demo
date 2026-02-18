@@ -28,7 +28,7 @@ npm install
 Create a `.env` file in `packages/api/`:
 
 ```bash
-cp .env.example .env
+cp .env.sample .env
 ```
 
 ### Step 3: Configure Environment Variables
@@ -62,13 +62,15 @@ SPONSOR_WHITELIST_ADDRESS=0x
 
 > **Important: Understanding Sponsor Wallet vs Contract Owners**
 > 
-> - **`SPONSOR_PRIVATE_KEY`** (Sponsor Wallet): This is the wallet that **pays for gas** when sponsoring user transactions. The backend uses this wallet to submit sponsored transactions on behalf of users. This wallet needs to have BTC balance to pay for gas.
+> - **`SPONSOR_PRIVATE_KEY`** (Sponsor Wallet): This is the wallet that **pays for gas** when sponsoring user transactions. The backend uses this wallet to submit sponsored transactions on behalf of users. 
+>   - **The sponsor wallet does NOT need to be the owner of any contract.** The only requirement is that it has sufficient BTC balance to pay for gas fees.
+>   - This wallet is completely independent from contract ownership and can be any wallet with funds.
 > 
 > - **Contract Owners**: The `SponsorWhitelist` contract has an `owner` (set during deployment) who can modify the whitelist, change daily limits, etc. This is a separate concept from the sponsor wallet.
 > 
 > - **`BatchCallAndSponsor`**: This is a contract that executes batched calls and validates sponsorship through the `SponsorWhitelist`. It doesn't have an owner - it's immutable after deployment.
 > 
-> In summary: The sponsor wallet pays gas, contract owners manage contract settings, and they are independent of each other.
+> In summary: The sponsor wallet pays gas (only needs funds, not ownership), contract owners manage contract settings, and they are independent of each other.
 
 ### Step 4: Start Development Server
 
@@ -152,3 +154,8 @@ packages/api/
 └── package.json
 ```
 
+## Next Steps
+
+Once you have configured and started the API server, proceed to set up the frontend UI:
+
+👉 **[UI Package README](../ui/README.md)**
