@@ -5,14 +5,14 @@ import { Address } from '@/types/wallet';
 const EnvSchema = z.object({
   VITE_PRIVY_APP_ID: z.string().default(''),
   VITE_PRIVY_CLIENT_ID: z.string().default(''),
-  VITE_COUNTER_CONTRACT: z.string().refine((value) => isAddress(value), {
-    message: 'VITE_COUNTER_CONTRACT must be a valid address',
+  VITE_COUNTER_CONTRACT_ADDRESS: z.string().refine((value) => isAddress(value), {
+    message: 'VITE_COUNTER_CONTRACT_ADDRESS must be a valid address',
   }).transform((value) => value as Address),
   VITE_API_URL: z.string().default('http://localhost:5000'),
-  VITE_BATCH_CALL_AND_SPONSOR: z.string().refine((value) => isAddress(value), {
+  VITE_BATCH_CALL_AND_SPONSOR_ADDRESS: z.string().refine((value) => isAddress(value), {
     message: 'BATCH_CALL_AND_SPONSOR_ADDRESS must be a valid address',
   }).transform((value) => value as Address),
-  VITE_SPONSOR_WHITELIST: z.string().refine((value) => isAddress(value), {
+  VITE_SPONSOR_WHITELIST_ADDRESS: z.string().refine((value) => isAddress(value), {
     message: 'SPONSOR_WHITELIST_ADDRESS must be a valid address',
   }).transform((value) => value as Address),
 });
@@ -37,8 +37,8 @@ if (!parsedEnv?.VITE_PRIVY_CLIENT_ID) {
 export const env = {
   privyAppId: parsedEnv?.VITE_PRIVY_APP_ID,
   privyClientId: parsedEnv?.VITE_PRIVY_CLIENT_ID,
-  counterAddress: parsedEnv?.VITE_COUNTER_CONTRACT as Address,
-  batchCallAndSponsorAddress: parsedEnv?.VITE_BATCH_CALL_AND_SPONSOR as Address,
-  sponsorWhitelistAddress: parsedEnv?.VITE_SPONSOR_WHITELIST as Address,
+  counterAddress: parsedEnv?.VITE_COUNTER_CONTRACT_ADDRESS as Address,
+  batchCallAndSponsorAddress: parsedEnv?.VITE_BATCH_CALL_AND_SPONSOR_ADDRESS as Address,
+  sponsorWhitelistAddress: parsedEnv?.VITE_SPONSOR_WHITELIST_ADDRESS as Address,
   apiUrl: parsedEnv?.VITE_API_URL,
 } as const;
