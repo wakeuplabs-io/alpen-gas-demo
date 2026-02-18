@@ -72,7 +72,7 @@ const sequenceDiagram = `
 sequenceDiagram
     participant Frontend
     participant Privy
-    participant Backend
+    participant Backend as Backend Relayer
     participant AlpenChain as Alpen Chain
     participant Batch as BatchCall&Sponsor
     participant Whitelist as SponsorWhitelist

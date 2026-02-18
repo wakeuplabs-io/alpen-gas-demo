@@ -15,7 +15,7 @@ to execute transactions.
 
 The application consists of:
 
--   **Frontend (React + Privy)**
+-   **Frontend (React + Privy/Dynamic)**
 -   **Backend Relayer (Hono + ethers/viem)**
 -   **BatchCallAndSponsor contract**
 -   **SponsorWhitelist contract**
@@ -30,13 +30,13 @@ Instead of ERC-4337 smart accounts.
 
 ## External Dependencies
 
-**Privy is the only external service integration** in this implementation. It's required because standard EOAs cannot sign EIP-7702 delegation authorizations, but Privy's embedded wallets can. See section 3.1 for details on wallet integration and alternatives.
+**Embedded wallet services (Privy or Dynamic) are the only external service integrations** in this implementation. They're required because standard EOAs cannot sign EIP-7702 delegation authorizations, but embedded wallets can. See section 3.1 for details on wallet integration and alternatives.
 
 ------------------------------------------------------------------------
 
 # 2. High-Level Flow
 
-1.  User connects wallet via Privy.
+1.  User connects wallet via Privy or Dynamic.
 2.  Frontend checks BTC balance on Alpen.
 3.  If balance is 0 → sponsorship flow is enabled.
 4.  Backend checks eligibility via SponsorWhitelist.
@@ -54,7 +54,7 @@ The complete flow of interactions between components:
 sequenceDiagram
     participant Frontend
     participant Privy
-    participant Backend
+    participant Backend as Backend Relayer
     participant AlpenChain as Alpen Chain
     participant Batch as BatchCall&Sponsor
     participant Whitelist as SponsorWhitelist
@@ -71,8 +71,8 @@ sequenceDiagram
     Whitelist-->>Backend: eligible
     Backend-->>Frontend: eligible
 
-    Frontend->>Privy: signAuthorization()
-    Privy-->>Frontend: authorization
+    Frontend->>Wallet: signAuthorization()
+    Wallet-->>Frontend: authorization
 
     Frontend->>Backend: setupDelegate(auth)
     Backend->>Batch: type4 tx (EIP-7702)
@@ -104,8 +104,8 @@ We chose delegated EOAs because:
 -   No smart account deployment required
 -   No bundler infrastructure required
 -   Simpler UX
--   Fully compatible with EOAs
--   Works cleanly with Privy
+-   Compatible with EOAs using embedded wallets
+-   Works cleanly with embedded wallets (Privy/Dynamic)
 -   Lower architectural complexity
 
 Users only: - Sign delegation authorization - Sign transaction digest
@@ -114,26 +114,31 @@ The backend handles gas payment.
 
 ------------------------------------------------------------------------
 
-# 3.1. Wallet Integration: Why Privy?
+# 3.1. Wallet Integration: Why Embedded Wallets (Privy/Dynamic)?
 
 ## The EIP-7702 Authorization Challenge
 
-Standard EOAs (Externally Owned Accounts) **cannot sign EIP-7702 delegation authorizations** directly. This is a fundamental limitation: regular wallet software (like MetaMask, Coinbase Wallet, etc.) does not support signing type-4 transactions (EIP-7702 delegations) at the time of this implementation.
+Standard EOAs (Externally Owned Accounts) **can sign EIP-7702 delegation authorizations** (they sign with their private key), but **standard wallet UIs do not natively provide interfaces** for signing these authorizations. This is an implementation limitation in wallet software, not a fundamental EOA limitation.
 
-## Privy's Embedded Wallets Solution
+At the time of this implementation, most regular wallet software (like standard MetaMask, Coinbase Wallet, etc.) does not provide native UI support for signing EIP-7702 delegation authorizations.
 
-**Privy is the only external service integration** used in this demo, and it's necessary because:
+## Embedded Wallets Solution (Privy/Dynamic)
 
-- Privy's **embedded wallets** are smart contract wallets that can sign EIP-7702 delegation authorizations
-- Embedded wallets provide the capability to sign both the delegation authorization and the transaction digest
+**Embedded wallet services (Privy or Dynamic) are the only external service integrations** used in this demo, and they're necessary because:
+
+- **Embedded wallets** (from Privy or Dynamic) are smart contract wallets that can sign EIP-7702 delegation authorizations
+- Both Privy and Dynamic provide embedded wallets with the capability to sign both the delegation authorization and the transaction digest
 - This enables the complete EIP-7702 flow without requiring users to have native BTC balance
+- Both services offer similar functionality for EIP-7702 signing, so either can be used interchangeably
 
 ## Alternative Implementations
 
-While this demo uses Privy, other wallet solutions could be used if they support EIP-7702:
+While this demo uses Privy/Dynamic, other wallet solutions could be used if they support EIP-7702:
 
-### 1. **Smart Contract Wallets with EIP-7702 Support**
-   - Any smart contract wallet that implements EIP-7702 signing capabilities
+### 1. **Embedded Wallet Services with EIP-7702 Support**
+   - **Privy**: Embedded wallet service with EIP-7702 signing support
+   - **Dynamic**: Embedded wallet service with EIP-7702 signing support (similar to Privy)
+   - Any other smart contract wallet that implements EIP-7702 signing capabilities
    - Examples: Custom embedded wallet solutions, account abstraction wallets
    - Requires the wallet to support signing type-4 transactions
 
@@ -154,7 +159,9 @@ While this demo uses Privy, other wallet solutions could be used if they support
 
 ## Current Limitation
 
-Until standard wallets add native EIP-7702 support, **embedded wallet solutions like Privy are necessary** to enable gas sponsorship with delegated EOAs. This is the only external service dependency in the architecture.
+Until standard wallet UIs add native EIP-7702 signing interfaces for regular EOAs, **embedded wallet solutions like Privy or Dynamic are necessary** to enable gas sponsorship with delegated EOAs. These are the only external service dependencies in the architecture.
+
+**Note**: The authorization itself is signed by the EOA's private key (which EOAs can do), but wallet software needs to provide the UI and signing interface for EIP-7702 authorizations. The type-4 transaction that activates the delegation must be submitted by a relayer (this is by design in EIP-7702).
 
 ------------------------------------------------------------------------
 
