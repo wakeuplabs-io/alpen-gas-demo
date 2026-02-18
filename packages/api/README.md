@@ -28,13 +28,12 @@ npm install
 Create a `.env` file in `packages/api/`:
 
 ```bash
-cp .env.example .env  # If you have an example file
-# Or create .env manually
+cp .env.example .env
 ```
 
 ### Step 3: Configure Environment Variables
 
-Add the following variables to your `.env` file:
+Edit the `.env` file and fill in the required values. See `.env.sample` for the complete list of variables:
 
 ```env
 NODE_ENV=development
@@ -44,21 +43,32 @@ CORS_ORIGINS=http://localhost:3000
 RPC_URL=https://rpc.testnet.alpenlabs.io
 
 SPONSOR_PRIVATE_KEY=0x
-
-SPONSOR_WHITELIST_ADDRESS=0x
 BATCH_CALL_AND_SPONSOR_ADDRESS=0x
+SPONSOR_WHITELIST_ADDRESS=0x
 ```
+
+> **Note**: Make sure to deploy contracts first (see [`packages/contracts/README.md`](../contracts/README.md)) and use the deployed addresses for `BATCH_CALL_AND_SPONSOR_ADDRESS` and `SPONSOR_WHITELIST_ADDRESS`.
 
 **Required Variables:**
 - `RPC_URL` - Alpen blockchain RPC endpoint
-- `SPONSOR_PRIVATE_KEY` - Private key for gas sponsorship
-- `BATCH_CALL_AND_SPONSOR_ADDRESS` - Deployed contract address
+- `SPONSOR_PRIVATE_KEY` - **Sponsor wallet private key** - This is the wallet that pays for gas when sponsoring transactions. This is different from contract owners (see note below).
+- `BATCH_CALL_AND_SPONSOR_ADDRESS` - Deployed BatchCallAndSponsor contract address
 
 **Optional Variables:**
 - `PORT` - Server port (default: 9999)
 - `LOG_LEVEL` - Logging level (default: info)
 - `CORS_ORIGINS` - Allowed CORS origins (default: http://localhost:3000)
-- `SPONSOR_WHITELIST_ADDRESS` - Whitelist contract address
+- `SPONSOR_WHITELIST_ADDRESS` - SponsorWhitelist contract address
+
+> **Important: Understanding Sponsor Wallet vs Contract Owners**
+> 
+> - **`SPONSOR_PRIVATE_KEY`** (Sponsor Wallet): This is the wallet that **pays for gas** when sponsoring user transactions. The backend uses this wallet to submit sponsored transactions on behalf of users. This wallet needs to have BTC balance to pay for gas.
+> 
+> - **Contract Owners**: The `SponsorWhitelist` contract has an `owner` (set during deployment) who can modify the whitelist, change daily limits, etc. This is a separate concept from the sponsor wallet.
+> 
+> - **`BatchCallAndSponsor`**: This is a contract that executes batched calls and validates sponsorship through the `SponsorWhitelist`. It doesn't have an owner - it's immutable after deployment.
+> 
+> In summary: The sponsor wallet pays gas, contract owners manage contract settings, and they are independent of each other.
 
 ### Step 4: Start Development Server
 

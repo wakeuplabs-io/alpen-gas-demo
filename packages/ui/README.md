@@ -27,29 +27,35 @@ npm install
 Create a `.env` file in `packages/ui/`:
 
 ```bash
-cp .env.example .env  # If you have an example file
-# Or create .env manually
+cp .env.example .env
 ```
 
 ### Step 3: Configure Environment Variables
 
-Add the following variables to your `.env` file:
+Edit the `.env` file and fill in the required values. See `.env.example` for the complete list of variables:
 
 ```env
 VITE_API_URL=http://localhost:9999
 VITE_PRIVY_APP_ID=your_privy_app_id
 VITE_PRIVY_CLIENT_ID=your_privy_client_id
-VITE_COUNTER_CONTRACT=0x...
-VITE_BATCH_CALL_AND_SPONSOR=0x...
-VITE_SPONSOR_WHITELIST=0x...
+VITE_COUNTER_CONTRACT_ADDRESS=0x
+VITE_BATCH_CALL_AND_SPONSOR_ADDRESS=0x
+VITE_SPONSOR_WHITELIST_ADDRESS=0x
 ```
 
-> **Note**: `VITE_API_URL` should match the API server port. The default API port is 9999.
+> **Important Setup Sequence:**
+> 1. Deploy contracts first (see [`packages/contracts/README.md`](../contracts/README.md))
+> 2. Configure the API with contract addresses (see [`packages/api/README.md`](../api/README.md))
+> 3. Then configure the UI with the same contract addresses
+> 
+> `VITE_API_URL` should match the API server port (default: 9999).
 
 **Required Variables:**
-- `VITE_COUNTER_CONTRACT` - Counter contract address (must be valid Ethereum address)
-- `VITE_BATCH_CALL_AND_SPONSOR` - Batch call contract address (must be valid Ethereum address)
-- `VITE_SPONSOR_WHITELIST` - Whitelist contract address (must be valid Ethereum address)
+- `VITE_COUNTER_CONTRACT_ADDRESS` - Counter contract address (must be valid Ethereum address)
+- `VITE_BATCH_CALL_AND_SPONSOR_ADDRESS` - BatchCallAndSponsor contract address (must be valid Ethereum address)
+- `VITE_SPONSOR_WHITELIST_ADDRESS` - SponsorWhitelist contract address (must be valid Ethereum address)
+
+> **Note**: These contract addresses should match the ones configured in the backend API (`BATCH_CALL_AND_SPONSOR_ADDRESS` and `SPONSOR_WHITELIST_ADDRESS`).
 - `VITE_PRIVY_APP_ID` - Privy application ID (warns if not set)
 - `VITE_PRIVY_CLIENT_ID` - Privy client ID (warns if not set)
 - `VITE_API_URL` - Backend API URL (default: http://localhost:5000, should match API port)

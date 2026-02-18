@@ -41,6 +41,48 @@ Each package has its own README with setup instructions:
 - **[`packages/ui/README.md`](./packages/ui/README.md)** - Frontend application setup and development
 - **[`packages/contracts/README.md`](./packages/contracts/README.md)** - Smart contracts setup and development
 
+## Quick Start Setup
+
+### Setup Sequence
+
+For end-to-end testing and local development, follow this sequence:
+
+1. **Deploy Smart Contracts** (see [`packages/contracts/README.md`](./packages/contracts/README.md))
+   - Deploy `BatchCallAndSponsor` and `SponsorWhitelist` contracts
+   - Deploy `Counter` contract
+   - Add `Counter` to the `SponsorWhitelist` allow list
+   - Save all deployed contract addresses
+   - **Test contracts (dry-run)**: Run `./script/test-contracts.sh` to verify contracts work before proceeding
+
+2. **Configure Backend API** (see [`packages/api/README.md`](./packages/api/README.md))
+   - Copy `packages/api/.env.example` to `packages/api/.env`
+   - Set `RPC_URL` to your Alpen RPC endpoint
+   - Set `SPONSOR_PRIVATE_KEY` with your sponsor wallet private key
+   - Set `BATCH_CALL_AND_SPONSOR_ADDRESS` and `SPONSOR_WHITELIST_ADDRESS` from step 1
+   - Start the API server: `cd packages/api && npm run dev`
+
+3. **Configure Frontend UI** (see [`packages/ui/README.md`](./packages/ui/README.md))
+   - Copy `packages/ui/.env.example` to `packages/ui/.env`
+   - Set `VITE_API_URL` to match your API server (default: `http://localhost:9999`)
+   - Set `VITE_COUNTER_CONTRACT_ADDRESS`, `VITE_BATCH_CALL_AND_SPONSOR_ADDRESS`, and `VITE_SPONSOR_WHITELIST_ADDRESS` from step 1
+   - Configure Privy wallet credentials (`VITE_PRIVY_APP_ID`, `VITE_PRIVY_CLIENT_ID`)
+   - Start the UI: `cd packages/ui && npm run dev`
+
+4. **Run Smoke Tests** (optional but recommended)
+   - Run `npm run test:smoke` from the root directory to verify all components are connected
+   - This checks backend API, contract connectivity, and basic configuration
+
+### Running Everything Together
+
+```bash
+# From the root directory, start both API and UI
+npm run dev
+```
+
+This will start:
+- API server on `http://localhost:9999`
+- UI application on `http://localhost:3000`
+
 ## Technical Documentation
 
 For detailed architecture, design decisions, and implementation details:
