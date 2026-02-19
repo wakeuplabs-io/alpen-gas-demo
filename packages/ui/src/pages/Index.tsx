@@ -14,6 +14,7 @@ import { useCounter } from '@/hooks/use-counter';
 import { useSponsorship } from '@/hooks/use-sponsorship';
 import { useLastEvent } from '@/hooks/use-last-event';
 import { useTransaction } from '@/hooks/use-transaction';
+import { useAutoDelegate } from '@/hooks/use-auto-delegate';
 
 import { TransactionStatus } from '@/types/transaction';
 import { Address } from '@/types/wallet';
@@ -33,7 +34,8 @@ const Index = () => {
   const counter = useCounter();
   const { state: transaction, actions: transactionActions } = useTransaction();
   const { sponsorship, checkEligibility } = useSponsorship();
-  const { lastEvent } = useLastEvent();
+  const { lastEvent } = useLastEvent();  
+  useAutoDelegate();
   
 
   const handleSignTransaction = async () => {

@@ -2,7 +2,7 @@ import { keccak256, solidityPacked } from "ethers";
 import { useSign7702Authorization, useSignMessage } from "@privy-io/react-auth";
 
 import { CHAIN_ID, PROVIDER } from "@/lib/network";
-import { isDelegatedToImplementation, getAccountCodeWithRetry, isDelegated } from "@/lib/delegation";
+import { isDelegatedToImplementation, getAccountCodeAtBlock, isDelegated } from "@/lib/delegation";
 
 import { BATCH_CALL_AND_SPONSOR_ADDRESS } from "@/infra/contracts";
 import { getContractNonce } from "@/infra/contracts/delegated";
@@ -59,8 +59,8 @@ export function useDelegate() {
       throw new Error("Please connect your wallet first");
     }
 
-    // Check if account is delegated (with retries)
-    const accountCode = await getAccountCodeWithRetry(user);
+    // Check if account is delegated (query latest block, no retries needed)
+    const accountCode = await getAccountCodeAtBlock(user);
     if (!accountCode || !isDelegated(accountCode)) {
       throw new Error("Account not delegated. Please wait for delegation to be confirmed.");
     }

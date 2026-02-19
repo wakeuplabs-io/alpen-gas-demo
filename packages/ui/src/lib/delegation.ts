@@ -1,6 +1,25 @@
 import { PROVIDER } from "./network";
 
 /**
+ * Gets the account code at a specific block number (or latest if not provided)
+ * @param address - The address to check
+ * @param blockNumber - Optional block number to query (if not provided, queries latest)
+ * @returns The account code or null if not found
+ */
+export async function getAccountCodeAtBlock(
+  address: string,
+  blockNumber?: number
+): Promise<string | null> {
+  const accountCode = await PROVIDER.getCode(address, blockNumber);
+  
+  if (!accountCode || accountCode === "0x" || accountCode === "0x0" || accountCode.length <= 2) {
+    return null;
+  }
+
+  return accountCode;
+}
+
+/**
  * Gets the account code with retries to handle provider delays
  * @param address - The address to check
  * @param maxAttempts - Maximum number of retry attempts (default: 5)
@@ -54,19 +73,18 @@ export function getDelegationImplementation(accountCode: string): string {
  * Checks if an account is delegated to a specific implementation
  * @param address - The address to check
  * @param expectedImplementation - The expected implementation address
- * @param maxAttempts - Maximum number of retry attempts (default: 5)
+ * @param blockNumber - Optional block number to query (if not provided, queries latest)
  * @returns true if delegated to the expected implementation, false otherwise
  */
 export async function isDelegatedToImplementation(
   address: string,
   expectedImplementation: string,
-  maxAttempts: number = 5
+  blockNumber?: number
 ): Promise<boolean> {
-  const accountCode = await getAccountCodeWithRetry(address, maxAttempts);
+  const accountCode = await getAccountCodeAtBlock(address, blockNumber);
   if (!accountCode || !isDelegated(accountCode)) {
     return false;
   }
-
 
   const currentImplementation = "0x" + accountCode.split("0xef0100")[1];
   if (currentImplementation.toLowerCase() === expectedImplementation.toLowerCase()){

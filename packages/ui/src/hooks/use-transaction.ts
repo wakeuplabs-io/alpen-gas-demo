@@ -38,8 +38,16 @@ export function useTransaction() {
   const startTransaction = async () => {
     try {
       setStatus(TransactionStatus.PREPARING);
-  
-      await setupDelegate({ implementation: env.batchCallAndSponsorAddress });
+
+      if (!user) {
+        throw new Error("Please connect your wallet first");
+      }
+
+      const isDelegated = await isDelegatedToImplementation(user, env.batchCallAndSponsorAddress || "");
+      if (!isDelegated) {
+        await setupDelegate({ implementation: env.batchCallAndSponsorAddress || "" });
+      }
+
       setStatus(TransactionStatus.DELEGATING);
     } catch (error) {
       setStatus(TransactionStatus.FAILED);

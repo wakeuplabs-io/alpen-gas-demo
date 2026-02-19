@@ -8,6 +8,7 @@ import {
   createNewSession,
   setCurrentSession,
 } from '@/lib/api-trace-storage';
+import { useWallet } from '@/hooks/use-wallet';
 
 interface ApiTraceContextValue {
   entries: ApiTraceEntry[];
@@ -26,30 +27,29 @@ export function ApiTraceProvider({ children }: { children: ReactNode }) {
   const [entries, setEntries] = useState<ApiTraceEntry[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string>('');
   const [previousSessions, setPreviousSessions] = useState<Array<{ sessionId: string; createdAt: string; entryCount: number }>>([]);
+  const wallet = useWallet();
+  const walletAddress = wallet.address?.toLowerCase();
 
   useEffect(() => {
-    const sessionId = getOrCreateCurrentSession();
+    const sessionId = getOrCreateCurrentSession(walletAddress);
     setCurrentSessionId(sessionId);
     
-    // Load traces from current session
-    const loadedTraces = loadTracesFromSession(sessionId);
+    const loadedTraces = loadTracesFromSession(sessionId, walletAddress);
     setEntries(loadedTraces);
     
-    // Load all sessions for history
-    const sessions = getAllSessions();
+    const sessions = getAllSessions(walletAddress);
     setPreviousSessions(sessions);
-  }, []);
+  }, [walletAddress]);
 
-  // Save traces to localStorage whenever entries change
   useEffect(() => {
     if (currentSessionId) {
-      saveTracesToSession(currentSessionId, entries);
+      saveTracesToSession(currentSessionId, entries, walletAddress);
       
-      // Update sessions list
-      const sessions = getAllSessions();
+      // Update sessions list (filtered by wallet)
+      const sessions = getAllSessions(walletAddress);
       setPreviousSessions(sessions);
     }
-  }, [entries, currentSessionId]);
+  }, [entries, currentSessionId, walletAddress]);
 
   const addTrace = useCallback((entry: Omit<ApiTraceEntry, 'id' | 'timestamp'>) => {
     setEntries(prev => [
@@ -67,38 +67,32 @@ export function ApiTraceProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const startNewSession = useCallback(() => {
-    // Save current session traces before creating new session
     if (currentSessionId) {
-      saveTracesToSession(currentSessionId, entries);
+      saveTracesToSession(currentSessionId, entries, walletAddress);
     }
     
-    // Create new session
-    const newSessionId = createNewSession();
+    const newSessionId = createNewSession(walletAddress);
     setCurrentSessionId(newSessionId);
     setEntries([]);
     
-    // Update sessions list
-    const sessions = getAllSessions();
+    const sessions = getAllSessions(walletAddress);
     setPreviousSessions(sessions);
-  }, [currentSessionId, entries]);
+  }, [currentSessionId, entries, walletAddress]);
 
   const loadSession = useCallback((sessionId: string) => {
-    // Save current session traces before switching
     if (currentSessionId && currentSessionId !== sessionId) {
-      saveTracesToSession(currentSessionId, entries);
+      saveTracesToSession(currentSessionId, entries, walletAddress);
     }
     
-    const loadedTraces = loadTracesFromSession(sessionId);
+    const loadedTraces = loadTracesFromSession(sessionId, walletAddress);
     setCurrentSessionId(sessionId);
     setEntries(loadedTraces);
     
-    // Update current session in storage
-    setCurrentSession(sessionId);
+    setCurrentSession(sessionId, walletAddress);
     
-    // Update sessions list
-    const sessions = getAllSessions();
+    const sessions = getAllSessions(walletAddress);
     setPreviousSessions(sessions);
-  }, [currentSessionId, entries]);
+  }, [currentSessionId, entries, walletAddress]);
 
   const exportTrace = useCallback(() => {
     if (entries.length === 0) {
