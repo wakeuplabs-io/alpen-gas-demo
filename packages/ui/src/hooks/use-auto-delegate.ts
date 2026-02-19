@@ -33,11 +33,11 @@ export function useAutoDelegate() {
     const setup = async () => {
       try {
         hasAttemptedRef.current = true;
+
         await setupDelegate({ 
           implementation: env.batchCallAndSponsorAddress 
         });
 
-        hasAttemptedRef.current = false;
       } catch (err) {
         console.error("Auto-delegation failed:", err);
         hasAttemptedRef.current = false;
